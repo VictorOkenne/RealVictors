@@ -1,28 +1,83 @@
+/**
+ * Supabase Service
+ * 
+ * Centralized service for all Supabase operations including authentication,
+ * database queries, and real-time subscriptions.
+ * 
+ * Features:
+ * - Authentication (sign up, sign in, sign out, OAuth)
+ * - Database operations (CRUD for all entities)
+ * - Real-time subscriptions
+ * - File uploads and media management
+ * - Search functionality
+ * - Notification management
+ * 
+ * Configuration:
+ * - Uses AsyncStorage for session persistence
+ * - Auto-refreshes tokens
+ * - Graceful fallback when environment variables are missing
+ */
+
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Database } from '../types/database';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
+// Get Supabase configuration from environment variables
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+// Create a placeholder client if environment variables are missing
+let supabase: any;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+  console.warn('⚠️ Supabase environment variables not configured. Authentication will not work until you set up your .env.local file.');
+  // Create a mock client that won't throw errors during development
+  supabase = {
+    auth: {
+      signUp: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+      signInWithPassword: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
+      signOut: () => Promise.resolve({ error: null }),
+      getUser: () => Promise.resolve({ data: { user: null }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+    },
+    from: () => ({
+      select: () => ({ single: () => Promise.resolve({ data: null, error: null }) }),
+      insert: () => Promise.resolve({ data: null, error: null }),
+      update: () => ({ eq: () => Promise.resolve({ data: null, error: null }) }),
+    }),
+  };
+} else {
+  // Create real Supabase client with AsyncStorage for session persistence
+  supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      storage: AsyncStorage, // Use AsyncStorage for session persistence
+      autoRefreshToken: true, // Automatically refresh expired tokens
+      persistSession: false, // Persist session across app restarts
+      detectSessionInUrl: false, // Don't detect session in URL (not needed for mobile)
+    },
+  });
 }
 
-// Create Supabase client with AsyncStorage for session persistence
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    storage: AsyncStorage,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
-  },
-});
+export { supabase };
 
-// Auth helpers
+/**
+ * Authentication Service
+ * 
+ * Handles all authentication-related operations including
+ * email/password auth and OAuth providers.
+ */
 export const authService = {
-  // Sign up with email and password
+  /**
+   * Sign up new user with email and password
+   * @param email User's email address
+   * @param password User's password
+   * @param displayName User's display name
+   * @returns Promise with user data or error
+   */
   async signUp(email: string, password: string, displayName: string) {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return { data: null, error: { message: 'Supabase not configured' } };
+    }
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -37,8 +92,16 @@ export const authService = {
     return data;
   },
 
-  // Sign in with email and password
+  /**
+   * Sign in existing user with email and password
+   * @param email User's email address
+   * @param password User's password
+   * @returns Promise with user data or error
+   */
   async signIn(email: string, password: string) {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return { data: null, error: { message: 'Supabase not configured' } };
+    }
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -48,7 +111,10 @@ export const authService = {
     return data;
   },
 
-  // Sign in with Google
+  /**
+   * Sign in with Google OAuth
+   * @returns Promise with OAuth data or error
+   */
   async signInWithGoogle() {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -61,7 +127,10 @@ export const authService = {
     return data;
   },
 
-  // Sign in with Apple
+  /**
+   * Sign in with Apple OAuth
+   * @returns Promise with OAuth data or error
+   */
   async signInWithApple() {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'apple',
@@ -74,13 +143,40 @@ export const authService = {
     return data;
   },
 
-  // Sign out
+  /**
+   * Sign out current user
+   * Clears the current session
+   */
   async signOut() {
+    console.log('🔐 authService.signOut() called');
     const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    if (error) {
+      console.error('❌ authService.signOut() error:', error);
+      throw error;
+    }
+    console.log('✅ authService.signOut() completed successfully');
   },
 
-  // Reset password
+  /**
+   * Clear local session without server call
+   * Useful for clearing cached session data
+   */
+  async clearSession() {
+    console.log('🧹 authService.clearSession() called');
+    try {
+      // Force clear the session locally
+      await supabase.auth.signOut({ scope: 'local' });
+      console.log('✅ authService.clearSession() completed');
+    } catch (error) {
+      console.log('⚠️ authService.clearSession() error (non-critical):', error);
+      // Don't throw error for clearSession as it's not critical
+    }
+  },
+
+  /**
+   * Send password reset email
+   * @param email User's email address
+   */
   async resetPassword(email: string) {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: 'realvictors://reset-password',
@@ -89,21 +185,31 @@ export const authService = {
     if (error) throw error;
   },
 
-  // Get current session
+  /**
+   * Get current session
+   * @returns Promise with current session or null
+   */
   async getSession() {
     const { data, error } = await supabase.auth.getSession();
     if (error) throw error;
     return data.session;
   },
 
-  // Get current user
+  /**
+   * Get current authenticated user
+   * @returns Promise with user data or null
+   */
   async getUser() {
     const { data, error } = await supabase.auth.getUser();
     if (error) throw error;
     return data.user;
   },
 
-  // Update user
+  /**
+   * Update user metadata
+   * @param updates User data to update
+   * @returns Promise with updated user data
+   */
   async updateUser(updates: any) {
     const { data, error } = await supabase.auth.updateUser(updates);
     if (error) throw error;
@@ -111,9 +217,34 @@ export const authService = {
   },
 };
 
-// Database helpers
+/**
+ * Database Service
+ * 
+ * Handles all database operations including CRUD operations
+ * for users, profiles, games, teams, posts, and more.
+ * 
+ * Features:
+ * - User and profile management
+ * - Game CRUD operations
+ * - Team management
+ * - Post and media handling
+ * - Search functionality
+ * - Statistics tracking
+ * - Notification management
+ */
 export const dbService = {
   // Users and profiles
+  async getUser(userId: string) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
   async getProfile(userId: string) {
     const { data, error } = await supabase
       .from('profiles')

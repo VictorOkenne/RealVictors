@@ -1,254 +1,186 @@
+/**
+ * Login Screen Component
+ * 
+ * Authentication screen for existing users to sign in.
+ * Supports email/password login and social authentication (Google, Apple).
+ * 
+ * Features:
+ * - Email and password input with validation
+ * - Social login options (Google, Apple)
+ * - Forgot password link
+ * - Sign up navigation
+ * - Form validation and error handling
+ * - Keyboard-aware layout
+ * - Loading states during authentication
+ */
+
 import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react-native';
-import { AuthController } from '../../src/controllers/AuthController';
-import { Button } from '../../src/components/ui/Button';
+import { useAuth } from '../../src/contexts/AuthContext';
+import { Button, Input } from '../../src/components/ui';
 import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS } from '../../src/constants';
 
+/**
+ * LoginScreen Component
+ * 
+ * Handles user authentication with email/password and social providers.
+ */
 export default function LoginScreen() {
+  // Form state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  
+  // Authentication hooks
+  const { signIn, signInWithGoogle, signInWithApple, isLoading } = useAuth();
 
+  /**
+   * Handle email/password login
+   * Validates form inputs and attempts authentication
+   */
   const handleLogin = async () => {
+    // Basic form validation
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
-    setLoading(true);
-    try {
-      await AuthController.signIn(email.trim(), password);
-      router.replace('/(tabs)');
-    } catch (error: any) {
-      Alert.alert('Login Failed', error.message || 'An error occurred during login');
-    } finally {
-      setLoading(false);
+    console.log('🔐 Attempting login for:', email);
+    const result = await signIn(email.trim(), password);
+    if (!result.success) {
+      console.log('❌ Login failed:', result.error);
+      Alert.alert('Login Failed', result.error || 'An error occurred during login');
+    } else {
+      console.log('✅ Login successful, AuthGuard should handle routing');
+      // Let AuthGuard handle the routing instead of manual redirect
+      // This ensures proper state synchronization
+      
     }
   };
 
+  /**
+   * Handle Google OAuth login
+   * Initiates Google authentication flow
+   */
   const handleGoogleLogin = async () => {
-    try {
-      await AuthController.signInWithGoogle();
-    } catch (error: any) {
-      Alert.alert('Google Login Failed', error.message || 'An error occurred');
+    const result = await signInWithGoogle();
+    if (!result.success) {
+      Alert.alert('Google Login Failed', result.error || 'An error occurred');
     }
   };
 
+  /**
+   * Handle Apple OAuth login
+   * Initiates Apple authentication flow
+   */
   const handleAppleLogin = async () => {
-    try {
-      await AuthController.signInWithApple();
-    } catch (error: any) {
-      Alert.alert('Apple Login Failed', error.message || 'An error occurred');
+    const result = await signInWithApple();
+    if (!result.success) {
+      Alert.alert('Apple Login Failed', result.error || 'An error occurred');
     }
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
+    <SafeAreaView style={styles.container}>
+      {/* Keyboard-aware container for better UX on mobile */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
+        style={styles.keyboardView}
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled" // Allow taps while keyboard is open
         >
-          <View style={{
-            flex: 1,
-            paddingHorizontal: SPACING['2xl'],
-            paddingTop: SPACING['6xl'],
-            justifyContent: 'center',
-          }}>
-            {/* Logo and Title */}
-            <View style={{ alignItems: 'center', marginBottom: SPACING['5xl'] }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.md }}>
-                <Text style={{
-                  fontSize: TYPOGRAPHY.fontSize['4xl'],
-                  fontFamily: TYPOGRAPHY.fontFamily.black,
-                  color: COLORS.black,
-                }}>
-                  Real
-                </Text>
-                <Text style={{
-                  fontSize: TYPOGRAPHY.fontSize['4xl'],
-                  fontFamily: TYPOGRAPHY.fontFamily.black,
-                  color: COLORS.gold,
-                }}>
-                  Victors
-                </Text>
+          <View style={styles.content}>
+            {/* App logo and welcome message */}
+            <View style={styles.header}>
+              <View style={styles.logoContainer}>
+                <Text style={styles.logoText}>Real</Text>
+                <Text style={styles.logoTextGold}>Victors</Text>
               </View>
-              <Text style={{
-                fontSize: TYPOGRAPHY.fontSize.lg,
-                fontFamily: TYPOGRAPHY.fontFamily.medium,
-                color: COLORS.gray600,
-                textAlign: 'center',
-              }}>
+              <Text style={styles.welcomeText}>
                 Welcome back to the ultimate sports platform
               </Text>
             </View>
 
-            {/* Login Form */}
-            <View style={{ marginBottom: SPACING['2xl'] }}>
-              {/* Email Input */}
-              <View style={{ marginBottom: SPACING.lg }}>
-                <Text style={{
-                  fontSize: TYPOGRAPHY.fontSize.base,
-                  fontFamily: TYPOGRAPHY.fontFamily.medium,
-                  color: COLORS.black,
-                  marginBottom: SPACING.sm,
-                }}>
-                  Email
-                </Text>
-                <View style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  borderWidth: 1,
-                  borderColor: COLORS.gray300,
-                  borderRadius: BORDER_RADIUS.lg,
-                  paddingHorizontal: SPACING.lg,
-                  backgroundColor: COLORS.gray50,
-                }}>
-                  <Mail size={20} color={COLORS.gray500} />
-                  <TextInput
-                    style={{
-                      flex: 1,
-                      paddingVertical: SPACING.lg,
-                      paddingLeft: SPACING.md,
-                      fontSize: TYPOGRAPHY.fontSize.base,
-                      fontFamily: TYPOGRAPHY.fontFamily.medium,
-                      color: COLORS.black,
-                    }}
-                    placeholder="Enter your email"
-                    placeholderTextColor={COLORS.gray500}
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoComplete="email"
-                  />
-                </View>
-              </View>
+            {/* Email and password login form */}
+            <View style={styles.formContainer}>
+              {/* Email input field */}
+              <Input
+                label="Email"
+                placeholder="Enter your email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                leftIcon={<Text style={styles.iconText}>📧</Text>}
+                isRequired
+              />
 
-              {/* Password Input */}
-              <View style={{ marginBottom: SPACING.lg }}>
-                <Text style={{
-                  fontSize: TYPOGRAPHY.fontSize.base,
-                  fontFamily: TYPOGRAPHY.fontFamily.medium,
-                  color: COLORS.black,
-                  marginBottom: SPACING.sm,
-                }}>
-                  Password
-                </Text>
-                <View style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  borderWidth: 1,
-                  borderColor: COLORS.gray300,
-                  borderRadius: BORDER_RADIUS.lg,
-                  paddingHorizontal: SPACING.lg,
-                  backgroundColor: COLORS.gray50,
-                }}>
-                  <Lock size={20} color={COLORS.gray500} />
-                  <TextInput
-                    style={{
-                      flex: 1,
-                      paddingVertical: SPACING.lg,
-                      paddingLeft: SPACING.md,
-                      fontSize: TYPOGRAPHY.fontSize.base,
-                      fontFamily: TYPOGRAPHY.fontFamily.medium,
-                      color: COLORS.black,
-                    }}
-                    placeholder="Enter your password"
-                    placeholderTextColor={COLORS.gray500}
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry={!showPassword}
-                    autoComplete="password"
-                  />
-                  <TouchableOpacity
-                    onPress={() => setShowPassword(!showPassword)}
-                    style={{ padding: SPACING.sm }}
-                  >
-                    {showPassword ? (
-                      <EyeOff size={20} color={COLORS.gray500} />
-                    ) : (
-                      <Eye size={20} color={COLORS.gray500} />
-                    )}
-                  </TouchableOpacity>
-                </View>
-              </View>
+              {/* Password input field */}
+              <Input
+                label="Password"
+                placeholder="Enter your password"
+                value={password}
+                onChangeText={setPassword}
+                isPassword
+                autoComplete="password"
+                leftIcon={<Text style={styles.iconText}>🔒</Text>}
+                isRequired
+              />
 
-              {/* Forgot Password */}
-              <TouchableOpacity style={{ alignSelf: 'flex-end', marginBottom: SPACING.xl }}>
+              {/* Forgot password link */}
+              <TouchableOpacity style={styles.forgotPasswordLink}>
                 <Link href="/(auth)/forgot-password" asChild>
-                  <Text style={{
-                    fontSize: TYPOGRAPHY.fontSize.sm,
-                    fontFamily: TYPOGRAPHY.fontFamily.medium,
-                    color: COLORS.gold,
-                  }}>
+                  <Text style={styles.forgotPasswordText}>
                     Forgot Password?
                   </Text>
                 </Link>
               </TouchableOpacity>
 
-              {/* Login Button */}
+              {/* Primary login button */}
               <Button
                 title="Sign In"
                 onPress={handleLogin}
-                loading={loading}
+                loading={isLoading}
                 fullWidth
                 size="lg"
               />
             </View>
 
-            {/* Divider */}
-            <View style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginVertical: SPACING.xl,
-            }}>
-              <View style={{
-                flex: 1,
-                height: 1,
-                backgroundColor: COLORS.gray300,
-              }} />
-              <Text style={{
-                fontSize: TYPOGRAPHY.fontSize.sm,
-                fontFamily: TYPOGRAPHY.fontFamily.medium,
-                color: COLORS.gray500,
-                marginHorizontal: SPACING.lg,
-              }}>
+            {/* Visual divider between email/password and social login */}
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>
                 or continue with
               </Text>
-              <View style={{
-                flex: 1,
-                height: 1,
-                backgroundColor: COLORS.gray300,
-              }} />
+              <View style={styles.dividerLine} />
             </View>
 
-            {/* Social Login Buttons */}
-            <View style={{ marginBottom: SPACING['2xl'] }}>
+            {/* Social authentication options */}
+            <View style={styles.socialContainer}>
+              {/* Google OAuth login button */}
               <Button
                 title="Continue with Google"
                 onPress={handleGoogleLogin}
                 variant="outline"
                 fullWidth
                 size="lg"
-                style={{ marginBottom: SPACING.md }}
+                style={styles.socialButton}
               />
+              {/* Apple OAuth login button */}
               <Button
                 title="Continue with Apple"
                 onPress={handleAppleLogin}
@@ -258,26 +190,14 @@ export default function LoginScreen() {
               />
             </View>
 
-            {/* Sign Up Link */}
-            <View style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              <Text style={{
-                fontSize: TYPOGRAPHY.fontSize.base,
-                fontFamily: TYPOGRAPHY.fontFamily.medium,
-                color: COLORS.gray600,
-              }}>
+            {/* Navigation to sign up screen */}
+            <View style={styles.signupContainer}>
+              <Text style={styles.signupText}>
                 Don't have an account?{' '}
               </Text>
               <Link href="/(auth)/signup" asChild>
                 <TouchableOpacity>
-                  <Text style={{
-                    fontSize: TYPOGRAPHY.fontSize.base,
-                    fontFamily: TYPOGRAPHY.fontFamily.semibold,
-                    color: COLORS.gold,
-                  }}>
+                  <Text style={styles.signupLink}>
                     Sign Up
                   </Text>
                 </TouchableOpacity>
@@ -289,3 +209,99 @@ export default function LoginScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: SPACING['2xl'],
+    paddingTop: SPACING['6xl'],
+    justifyContent: 'center',
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: SPACING['5xl'],
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  logoText: {
+    fontSize: TYPOGRAPHY.fontSize['4xl'],
+    fontFamily: TYPOGRAPHY.fontFamily.black,
+    color: COLORS.black,
+  },
+  logoTextGold: {
+    fontSize: TYPOGRAPHY.fontSize['4xl'],
+    fontFamily: TYPOGRAPHY.fontFamily.black,
+    color: COLORS.gold,
+  },
+  welcomeText: {
+    fontSize: TYPOGRAPHY.fontSize.lg,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    color: COLORS.gray600,
+    textAlign: 'center',
+  },
+  formContainer: {
+    marginBottom: SPACING['2xl'],
+  },
+  iconText: {
+    fontSize: 20,
+  },
+  forgotPasswordLink: {
+    alignSelf: 'flex-end',
+    marginBottom: SPACING.xl,
+  },
+  forgotPasswordText: {
+    fontSize: TYPOGRAPHY.fontSize.sm,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    color: COLORS.gold,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: SPACING.xl,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: COLORS.gray300,
+  },
+  dividerText: {
+    fontSize: TYPOGRAPHY.fontSize.sm,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    color: COLORS.gray500,
+    marginHorizontal: SPACING.lg,
+  },
+  socialContainer: {
+    marginBottom: SPACING['2xl'],
+  },
+  socialButton: {
+    marginBottom: SPACING.md,
+  },
+  signupContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  signupText: {
+    fontSize: TYPOGRAPHY.fontSize.base,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    color: COLORS.gray600,
+  },
+  signupLink: {
+    fontSize: TYPOGRAPHY.fontSize.base,
+    fontFamily: TYPOGRAPHY.fontFamily.semibold,
+    color: COLORS.gold,
+  },
+});

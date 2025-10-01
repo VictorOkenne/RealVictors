@@ -1,3 +1,19 @@
+/**
+ * Button Component
+ * 
+ * A versatile button component with multiple variants, sizes, and states.
+ * Supports icons, loading states, and various styling options.
+ * 
+ * Features:
+ * - Multiple variants (primary, secondary, outline, ghost, destructive)
+ * - Three sizes (sm, md, lg)
+ * - Loading state with spinner
+ * - Icon support with left/right positioning
+ * - Disabled state
+ * - Full width option
+ * - Custom styling support
+ */
+
 import React from 'react';
 import { TouchableOpacity, Text, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
 import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS } from '../../constants';
@@ -16,6 +32,11 @@ interface ButtonProps {
   textStyle?: TextStyle;
 }
 
+/**
+ * Button Component
+ * 
+ * Renders a customizable button with various styling options.
+ */
 export const Button: React.FC<ButtonProps> = ({
   title,
   onPress,
@@ -29,6 +50,10 @@ export const Button: React.FC<ButtonProps> = ({
   style,
   textStyle,
 }) => {
+  /**
+   * Generate button container styles based on props
+   * @returns ViewStyle object for the button container
+   */
   const getButtonStyles = (): ViewStyle => {
     const baseStyles: ViewStyle = {
       flexDirection: 'row',
@@ -38,7 +63,7 @@ export const Button: React.FC<ButtonProps> = ({
       borderWidth: 1,
     };
 
-    // Size styles
+    // Size-specific styles
     const sizeStyles: Record<string, ViewStyle> = {
       sm: {
         paddingHorizontal: SPACING.md,
@@ -57,7 +82,7 @@ export const Button: React.FC<ButtonProps> = ({
       },
     };
 
-    // Variant styles
+    // Variant-specific styles (colors and backgrounds)
     const variantStyles: Record<string, ViewStyle> = {
       primary: {
         backgroundColor: COLORS.gold,
@@ -81,7 +106,7 @@ export const Button: React.FC<ButtonProps> = ({
       },
     };
 
-    // Disabled styles
+    // Disabled state styles
     const disabledStyles: ViewStyle = {
       opacity: 0.5,
     };
@@ -98,13 +123,17 @@ export const Button: React.FC<ButtonProps> = ({
     };
   };
 
+  /**
+   * Generate text styles based on button props
+   * @returns TextStyle object for the button text
+   */
   const getTextStyles = (): TextStyle => {
     const baseStyles: TextStyle = {
       fontFamily: TYPOGRAPHY.fontFamily.semibold,
       textAlign: 'center',
     };
 
-    // Size styles
+    // Size-specific text styles
     const sizeStyles: Record<string, TextStyle> = {
       sm: {
         fontSize: TYPOGRAPHY.fontSize.sm,
@@ -120,7 +149,7 @@ export const Button: React.FC<ButtonProps> = ({
       },
     };
 
-    // Variant text colors
+    // Variant-specific text colors
     const variantTextColors: Record<string, string> = {
       primary: COLORS.black,
       secondary: COLORS.white,
@@ -136,6 +165,10 @@ export const Button: React.FC<ButtonProps> = ({
     };
   };
 
+  /**
+   * Render icon based on position
+   * @returns JSX element for the icon or null
+   */
   const renderIcon = () => {
     if (!icon) return null;
     
@@ -147,6 +180,10 @@ export const Button: React.FC<ButtonProps> = ({
     );
   };
 
+  /**
+   * Render button content (text, icon, or loading spinner)
+   * @returns JSX element for the button content
+   */
   const renderContent = () => {
     if (loading) {
       return (

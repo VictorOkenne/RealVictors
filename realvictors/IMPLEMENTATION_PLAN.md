@@ -470,6 +470,98 @@ CREATE INDEX idx_player_stats_user_sport ON player_stats (user_id, sport);
 // src/components/forms/TeamForm.tsx
 ```
 
+### StyleSheet Standards
+**MANDATORY**: All React Native components MUST use StyleSheet.create() for styling. Inline styles are prohibited.
+
+#### StyleSheet Requirements:
+1. **Import StyleSheet**: Always import StyleSheet from 'react-native'
+2. **Organize at Bottom**: Place StyleSheet.create() at the bottom of each component file
+3. **Descriptive Names**: Use clear, descriptive style names that reflect their purpose
+4. **Group Related Styles**: Group related styles together with comments
+5. **Consistent Naming**: Use camelCase for style names, be consistent across files
+6. **Reusable Patterns**: Extract common style patterns into shared style objects
+
+#### Example StyleSheet Structure:
+```typescript
+const styles = StyleSheet.create({
+  // Container styles
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: SPACING['2xl'],
+    paddingTop: SPACING['6xl'],
+    justifyContent: 'center',
+  },
+  
+  // Header styles
+  header: {
+    alignItems: 'center',
+    marginBottom: SPACING['5xl'],
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  
+  // Form styles
+  formContainer: {
+    marginBottom: SPACING['2xl'],
+  },
+  inputContainer: {
+    marginBottom: SPACING.lg,
+  },
+  
+  // Button styles
+  primaryButton: {
+    backgroundColor: COLORS.gold,
+    paddingVertical: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
+  },
+  
+  // Text styles
+  title: {
+    fontSize: TYPOGRAPHY.fontSize['3xl'],
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    color: COLORS.black,
+    marginBottom: SPACING.md,
+  },
+  subtitle: {
+    fontSize: TYPOGRAPHY.fontSize.base,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    color: COLORS.gray600,
+    lineHeight: 24,
+  },
+});
+```
+
+#### Prohibited Patterns:
+```typescript
+// ❌ NEVER use inline styles
+<View style={{ flex: 1, backgroundColor: 'white' }}>
+
+// ❌ NEVER use style arrays with inline objects
+<View style={[styles.container, { marginTop: 20 }]}>
+
+// ❌ NEVER use dynamic inline styles
+<View style={{ backgroundColor: isActive ? 'gold' : 'gray' }}>
+```
+
+#### Required Patterns:
+```typescript
+// ✅ ALWAYS use StyleSheet
+<View style={styles.container}>
+
+// ✅ Use style arrays with predefined styles
+<View style={[styles.container, styles.activeContainer]}>
+
+// ✅ Use conditional styles with predefined options
+<View style={[styles.container, isActive && styles.activeContainer]}>
+```
+
 ### Environment Configuration
 ```bash
 # .env.local

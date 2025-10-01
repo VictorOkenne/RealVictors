@@ -1,41 +1,142 @@
 // Fallback for using MaterialIcons on Android and web.
 
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
-import { ComponentProps } from 'react';
-import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { StyleProp, ViewStyle } from 'react-native';
 
-type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof MaterialIcons>['name']>;
-type IconSymbolName = keyof typeof MAPPING;
-
-/**
- * Add your SF Symbols to Material Icons mappings here.
- * - see Material Icons in the [Icons Directory](https://icons.expo.fyi).
- * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
- */
-const MAPPING = {
+// Icon mapping for SF Symbols to Material Icons
+const iconMap: Record<string, keyof typeof MaterialIcons.glyphMap> = {
   'house.fill': 'home',
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
-} as IconMapping;
+  'person.fill': 'person',
+  'heart.fill': 'favorite',
+  'star.fill': 'star',
+  'plus': 'add',
+  'minus': 'remove',
+  'xmark': 'close',
+  'checkmark': 'check',
+  'gear': 'settings',
+  'magnifyingglass': 'search',
+  'bell.fill': 'notifications',
+  'envelope.fill': 'mail',
+  'phone.fill': 'phone',
+  'camera.fill': 'camera-alt',
+  'photo.fill': 'photo',
+  'video.fill': 'videocam',
+  'location.fill': 'location-on',
+  'map.fill': 'map',
+  'calendar': 'event',
+  'clock.fill': 'access-time',
+  'tag.fill': 'local-offer',
+  'bookmark.fill': 'bookmark',
+  'share': 'share',
+  'square.and.arrow.up': 'ios-share',
+  'square.and.arrow.down': 'file-download',
+  'pencil': 'edit',
+  'trash.fill': 'delete',
+  'arrow.left': 'arrow-back',
+  'arrow.right': 'arrow-forward',
+  'arrow.up': 'keyboard-arrow-up',
+  'arrow.down': 'keyboard-arrow-down',
+  'chevron.left': 'chevron-left',
+  'chevron.up': 'keyboard-arrow-up',
+  'chevron.down': 'keyboard-arrow-down',
+  'play.fill': 'play-arrow',
+  'pause.fill': 'pause',
+  'stop.fill': 'stop',
+  'forward.fill': 'fast-forward',
+  'backward.fill': 'fast-rewind',
+  'repeat': 'repeat',
+  'shuffle': 'shuffle',
+  'volume.fill': 'volume-up',
+  'volume.slash.fill': 'volume-off',
+  'speaker.fill': 'speaker',
+  'mic.fill': 'mic',
+  'mic.slash.fill': 'mic-off',
+  'wifi': 'wifi',
+  'wifi.slash': 'wifi-off',
+  'battery.100': 'battery-full',
+  'battery.75': 'battery-6-bar',
+  'battery.50': 'battery-4-bar',
+  'battery.25': 'battery-2-bar',
+  'battery.0': 'battery-0-bar',
+  'bolt.fill': 'flash-on',
+  'sun.max.fill': 'wb-sunny',
+  'moon.fill': 'nightlight-round',
+  'cloud.fill': 'cloud',
+  'cloud.rain.fill': 'cloud-queue',
+  'cloud.snow.fill': 'ac-unit',
+  'thermometer': 'thermostat',
+  'drop.fill': 'water-drop',
+  'wind': 'air',
+  'tornado': 'tornado',
+  'hurricane': 'cyclone',
+  'snow': 'snowing',
+  'sun.dust.fill': 'dust',
+  'sun.haze.fill': 'foggy',
+  'cloud.fog.fill': 'foggy',
+  'cloud.bolt.fill': 'thunderstorm',
+  'cloud.bolt.rain.fill': 'thunderstorm',
+  'cloud.heavyrain.fill': 'heavy-rain',
+  'cloud.sleet.fill': 'sleet',
+  'cloud.hail.fill': 'hail',
+  'cloud.drizzle.fill': 'drizzle',
+  'cloud.sun.fill': 'partly-cloudy-day',
+  'cloud.moon.fill': 'partly-cloudy-night',
+  'sun.max': 'wb-sunny',
+  'moon': 'nightlight-round',
+  'cloud': 'cloud',
+  'cloud.rain': 'cloud-queue',
+  'cloud.snow': 'ac-unit',
+  'thermometer.sun': 'thermostat',
+  'thermometer.snowflake': 'thermostat',
+  'thermometer.high': 'thermostat',
+  'thermometer.low': 'thermostat',
+  'drop': 'water-drop',
+  'wind.circle': 'air',
+  'tornado.circle': 'tornado',
+  'hurricane.circle': 'cyclone',
+  'snow.circle': 'snowing',
+  'sun.dust': 'dust',
+  'sun.haze': 'foggy',
+  'cloud.fog': 'foggy',
+  'cloud.bolt': 'thunderstorm',
+  'cloud.bolt.rain': 'thunderstorm',
+  'cloud.heavyrain': 'heavy-rain',
+  'cloud.sleet': 'sleet',
+  'cloud.hail': 'hail',
+  'cloud.drizzle': 'drizzle',
+  'cloud.sun': 'partly-cloudy-day',
+  'cloud.moon': 'partly-cloudy-night',
+};
 
 /**
- * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
+ * An icon component that uses Material Icons across all platforms.
  * This ensures a consistent look across platforms, and optimal resource usage.
- * Icon `name`s are based on SF Symbols and require manual mapping to Material Icons.
+ * Icon `name`s are based on SF Symbols and are mapped to Material Icons.
  */
 export function IconSymbol({
   name,
   size = 24,
   color,
   style,
+  weight = 'regular',
 }: {
-  name: IconSymbolName;
+  name: string;
   size?: number;
-  color: string | OpaqueColorValue;
-  style?: StyleProp<TextStyle>;
-  weight?: SymbolWeight;
+  color: string;
+  style?: StyleProp<ViewStyle>;
+  weight?: string;
 }) {
-  return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
+  const iconName = iconMap[name] || 'help-outline';
+  
+  return (
+    <MaterialIcons
+      name={iconName}
+      size={size}
+      color={color}
+      style={style}
+    />
+  );
 }

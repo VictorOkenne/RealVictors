@@ -51,6 +51,10 @@ TECHNICAL REQUIREMENTS:
 - Proper error boundaries and fallbacks
 - Accessibility labels and screen reader support
 - Deep linking support for password reset and OAuth
+- Use StyleSheet.create() for all styling - NO inline styles
+- Organize styles at the bottom of each component file
+- Use descriptive style names that reflect their purpose
+- Group related styles together with comments
 
 SAMPLE DATA TO USE:
 - Sports options: basketball, soccer, volleyball, hockey, tennis, baseball
@@ -59,6 +63,107 @@ SAMPLE DATA TO USE:
 - Sample user: Victor Okenne, basketball/soccer player, competitive level
 
 Start with the login screen and work through the complete authentication flow. Ensure all screens are properly connected and navigation works smoothly.
+
+## STYLESHEET USAGE GUIDELINES
+
+**MANDATORY**: All React Native components MUST use StyleSheet.create() for styling. Inline styles are prohibited.
+
+### StyleSheet Best Practices:
+
+1. **Import StyleSheet**: Always import StyleSheet from 'react-native'
+2. **Organize at Bottom**: Place StyleSheet.create() at the bottom of each component file
+3. **Descriptive Names**: Use clear, descriptive style names that reflect their purpose
+4. **Group Related Styles**: Group related styles together with comments
+5. **Consistent Naming**: Use camelCase for style names, be consistent across files
+6. **Reusable Patterns**: Extract common style patterns into shared style objects
+
+### Example StyleSheet Structure:
+```typescript
+const styles = StyleSheet.create({
+  // Container styles
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: SPACING['2xl'],
+    paddingTop: SPACING['6xl'],
+    justifyContent: 'center',
+  },
+  
+  // Header styles
+  header: {
+    alignItems: 'center',
+    marginBottom: SPACING['5xl'],
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  
+  // Form styles
+  formContainer: {
+    marginBottom: SPACING['2xl'],
+  },
+  inputContainer: {
+    marginBottom: SPACING.lg,
+  },
+  
+  // Button styles
+  primaryButton: {
+    backgroundColor: COLORS.gold,
+    paddingVertical: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
+  },
+  
+  // Text styles
+  title: {
+    fontSize: TYPOGRAPHY.fontSize['3xl'],
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    color: COLORS.black,
+    marginBottom: SPACING.md,
+  },
+  subtitle: {
+    fontSize: TYPOGRAPHY.fontSize.base,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    color: COLORS.gray600,
+    lineHeight: 24,
+  },
+});
+```
+
+### StyleSheet Benefits:
+- **Performance**: Styles are created once and reused
+- **Readability**: Clean separation of logic and styling
+- **Maintainability**: Easy to update and modify styles
+- **Type Safety**: Better TypeScript support and autocomplete
+- **Debugging**: Easier to debug style-related issues
+- **Consistency**: Enforces consistent styling patterns
+
+### Prohibited Patterns:
+```typescript
+// ❌ NEVER use inline styles
+<View style={{ flex: 1, backgroundColor: 'white' }}>
+
+// ❌ NEVER use style arrays with inline objects
+<View style={[styles.container, { marginTop: 20 }]}>
+
+// ❌ NEVER use dynamic inline styles
+<View style={{ backgroundColor: isActive ? 'gold' : 'gray' }}>
+```
+
+### Required Patterns:
+```typescript
+// ✅ ALWAYS use StyleSheet
+<View style={styles.container}>
+
+// ✅ Use style arrays with predefined styles
+<View style={[styles.container, styles.activeContainer]}>
+
+// ✅ Use conditional styles with predefined options
+<View style={[styles.container, isActive && styles.activeContainer]}>
 ```
 
 ---
