@@ -23,7 +23,7 @@ RealVictors is a comprehensive social-sports platform that enables athletes and 
 - **Architecture**: Model-View-Controller (MVC)
 
 ### Design System
-- **Colors**: Black (#000000), White (#FFFFFF), Gold (#C59A2E)
+- **Colors**: Black (#000000), White (#FFFFFF), Gold (#f8cb25)
 - **Typography**: Bold, athletic sans-serif (Montserrat family)
 - **Style**: Nike/Adidas inspired - sporty, bold, minimalist with gold accents
 - **Components**: Custom component library following atomic design
