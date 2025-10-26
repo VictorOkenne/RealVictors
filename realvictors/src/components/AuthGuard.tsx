@@ -17,11 +17,16 @@
  * - Handles edge cases gracefully
  */
 
-import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
 import { router, useSegments } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
+import { COLORS } from '../constants';
 import { useAuth } from '../contexts/AuthContext';
-import { COLORS, SPACING } from '../constants';
+
+// ⚠️ DEVELOPMENT ONLY - Set to true to bypass authentication
+const SKIP_AUTH = true; // ← Change this to false when you want auth back
+
+
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -40,6 +45,11 @@ export function AuthGuard({ children }: AuthGuardProps) {
   const segments = useSegments();
   // Navigation lock to prevent loops
   const [isNavigating, setIsNavigating] = useState(false);
+
+  // Skip authentication during development
+  if (SKIP_AUTH) {
+    return <>{children}</>;
+  }
 
   // Add timeout to prevent infinite loading
   useEffect(() => {
@@ -74,6 +84,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
       segments,
       inAuthGroup,
       inTabsGroup,
+      isNavigating,
     });
 
     // Don't navigate while loading, but allow fallback after timeout
@@ -93,11 +104,14 @@ export function AuthGuard({ children }: AuthGuardProps) {
       }
     } else if (user && isAuthenticated && !profile) {
       // Case 2: User exists but no profile - redirect to onboarding  
+      // Only redirect if not already on onboarding page
       if (segments[1] !== 'onboarding') {
         console.log('🚀 Redirecting to onboarding - user exists but no profile');
         setIsNavigating(true);
         router.replace('/(auth)/onboarding');
         setTimeout(() => setIsNavigating(false), 500);
+      } else {
+        console.log('ℹ️ Already on onboarding, waiting for completion...');
       }
     } else if (user && isAuthenticated && profile) {
       // Case 3: User and profile exist - redirect to main app
@@ -105,10 +119,12 @@ export function AuthGuard({ children }: AuthGuardProps) {
         console.log('🚀 Redirecting to tabs - user and profile exist');
         setIsNavigating(true);
         router.replace('/(tabs)');
-        setTimeout(() => setIsNavigating(false), 500);
+        setTimeout(() => setIsNavigating(false), 1000);
+      } else {
+        console.log('ℹ️ User has profile and already in main app');
       }
     }
-  }, [user, profile, isAuthenticated, isLoading, segments]);
+  }, [user, profile, isAuthenticated, isLoading, segments, isNavigating]);
 
   // Show loading spinner while loading
   if (isLoading) {

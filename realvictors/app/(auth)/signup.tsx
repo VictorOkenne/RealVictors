@@ -1,11 +1,11 @@
 import {
-  Montserrat_500Medium,
-  Montserrat_600SemiBold,
-  Montserrat_700Bold,
-  useFonts,
+    Montserrat_500Medium,
+    Montserrat_600SemiBold,
+    Montserrat_700Bold,
+    useFonts,
 } from '@expo-google-fonts/montserrat';
 import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
-import { MainSignupPage } from '../../src/components/screens/Signup';
+import { MainSignupPage } from '../../src/components/screens/AuthScreens/Signup';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useAppTheme } from '../../src/utils/theme';
 

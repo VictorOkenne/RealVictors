@@ -1,0 +1,28 @@
+import React from 'react';
+import Svg, { Path } from 'react-native-svg';
+
+interface MessageIconProps {
+  width?: number;
+  height?: number;
+  color?: string;
+}
+
+export const MessageIcon: React.FC<MessageIconProps> = ({ 
+  width = 26, 
+  height = 26, 
+  color = 'white' 
+}) => {
+  return (
+    <Svg width={width} height={height} viewBox="0 0 26 26" fill="none">
+      <Path 
+        d="M7.42425 9.54534H16.9697M7.42425 13.7878H16.9697M7.42425 18.0302H12.7273M23.3333 12.7272C23.3333 18.5849 18.585 23.3332 12.7273 23.3332H2.12122V12.7272C2.12122 6.86943 6.86955 2.12109 12.7273 2.12109C18.585 2.12109 23.3333 6.86943 23.3333 12.7272Z" 
+        stroke={color}
+        strokeWidth="2.12121"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+};
+
+export default MessageIcon;

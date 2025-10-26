@@ -1,0 +1,25 @@
+import React from 'react';
+import Svg, { Path } from 'react-native-svg';
+
+interface NotificationIconProps {
+  width?: number;
+  height?: number;
+  color?: string;
+}
+
+export const NotificationIcon: React.FC<NotificationIconProps> = ({ 
+  width = 26, 
+  height = 26, 
+  color = 'white' 
+}) => {
+  return (
+    <Svg width={width} height={height} viewBox="0 0 26 26" fill="none">
+      <Path 
+        d="M5.30297 19.0908H20.1515V11.6994C20.1515 7.58109 16.8275 4.24231 12.7272 4.24231C8.62691 4.24231 5.30297 7.58109 5.30297 11.6994V19.0908ZM12.7272 2.12109C17.9984 2.12109 22.2727 6.40912 22.2727 11.6994V21.212H3.18176V11.6994C3.18176 6.40912 7.45601 2.12109 12.7272 2.12109ZM10.0757 22.2726H15.3787C15.3787 22.9758 15.0994 23.6503 14.6021 24.1475C14.1049 24.6448 13.4304 24.9241 12.7272 24.9241C12.024 24.9241 11.3496 24.6448 10.8523 24.1475C10.3551 23.6503 10.0757 22.9758 10.0757 22.2726Z" 
+        fill={color}
+      />
+    </Svg>
+  );
+};
+
+export default NotificationIcon;

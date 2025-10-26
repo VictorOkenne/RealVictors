@@ -12,10 +12,16 @@
  * - Configure status bar appearance
  */
 
+import {
+    Orbitron_400Regular,
+    Orbitron_500Medium,
+    Orbitron_700Bold,
+} from '@expo-google-fonts/orbitron';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -53,6 +59,21 @@ export default function RootLayout() {
   // Get current color scheme (light/dark) from system or user preference
   const colorScheme = useColorScheme();
 
+  // Load fonts
+  const [fontsLoaded] = useFonts({
+    Orbitron_400Regular,
+    Orbitron_500Medium,
+    Orbitron_700Bold,
+    // Satoshi fonts would go here when added manually
+    // 'Satoshi-Medium': require('../assets/fonts/Satoshi-Medium.otf'),
+    // 'Satoshi-Bold': require('../assets/fonts/Satoshi-Bold.otf'),
+  });
+
+  // Show loading state while fonts are loading
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       {/* Theme provider enables light/dark mode switching */}
@@ -66,6 +87,15 @@ export default function RootLayout() {
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               {/* Authentication screens - login, signup, onboarding */}
               <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              {/* Match details screen - full screen view of match information */}
+              <Stack.Screen 
+                name="match" 
+                options={{ 
+                  headerShown: false,
+                  presentation: 'card',
+                  animation: 'slide_from_right',
+                }} 
+              />
               {/* Modal screens for overlays and popups */}
               <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
             </Stack>

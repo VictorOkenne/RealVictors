@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
-import { MainOnboardingPage } from '../../src/components/screens/Onboarding';
+import { MainOnboardingPage } from '../../src/components/screens/AuthScreens/Onboarding';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { AuthController } from '../../src/controllers/AuthController';
 
@@ -43,6 +43,12 @@ export default function OnboardingScreen() {
   const handleOnboardingComplete = async (data: OnboardingData) => {
     if (!user) return;
 
+    // Prevent multiple submissions
+    if (loading) {
+      console.log('⚠️ Onboarding already in progress, ignoring duplicate submission');
+      return;
+    }
+
     setLoading(true);
     try {
       console.log('🚀 Completing onboarding for user:', user.id);
@@ -64,14 +70,32 @@ export default function OnboardingScreen() {
       
       await AuthController.completeOnboarding(user.id, onboardingPayload);
       
-      console.log('✅ Onboarding completed, refreshing auth state');
+      console.log('✅ Onboarding completed successfully!');
+      
+      // Wait a moment for database to persist
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      console.log('🔄 Refreshing auth state to load profile...');
       await refreshAuth();
-      console.log('✅ Auth state refreshed, AuthGuard should handle navigation');
-      // Let AuthGuard handle the navigation to tabs
+      
+      console.log('✅ Auth state refreshed');
+      
+      // Clear loading state - AuthGuard will handle navigation
+      setLoading(false);
     } catch (error: any) {
       console.error('❌ Onboarding completion failed:', error);
-      Alert.alert('Error', error.message || 'Failed to complete onboarding');
-    } finally {
+      
+      // Show user-friendly error message
+      let errorMsg = 'Failed to complete onboarding. Please try again.';
+      if (error.message) {
+        errorMsg = error.message;
+      }
+      
+      Alert.alert(
+        'Onboarding Error', 
+        errorMsg,
+        [{ text: 'OK', onPress: () => setLoading(false) }]
+      );
       setLoading(false);
     }
   };

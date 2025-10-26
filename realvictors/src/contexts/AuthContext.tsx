@@ -5,10 +5,10 @@
  * useAuth hooks from creating multiple auth listeners.
  */
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AuthController } from '../controllers/AuthController';
-import { User, Profile } from '../types';
 import { supabase } from '../services/supabase';
+import { Profile, User } from '../types';
 
 interface AuthState {
   user: User | null;
@@ -44,7 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('🔄 AuthContext - Initializing auth...');
       
       // Add timeout to prevent hanging
-      const timeoutPromise = new Promise((_, reject) => {
+      const timeoutPromise = new Promise<null>((_, reject) => {
         setTimeout(() => reject(new Error('Auth initialization timeout')), 10000);
       });
       
@@ -53,8 +53,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         timeoutPromise
       ]);
       
-      if (result) {
+      if (result && result.user) {
         console.log('✅ AuthContext - User found:', result.user.email);
+        console.log('👤 Profile status:', result.profile ? 'Profile exists' : 'No profile');
         setState({
           user: result.user,
           profile: result.profile,
@@ -123,8 +124,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const refreshAuth = async () => {
+    console.log('🔄 RefreshAuth called - resetting and reinitializing...');
     setHasInitialized(false);
+    setState(prev => ({ ...prev, isLoading: true }));
     await initializeAuth();
+    console.log('✅ RefreshAuth complete');
   };
 
   // Single auth state listener for the entire app

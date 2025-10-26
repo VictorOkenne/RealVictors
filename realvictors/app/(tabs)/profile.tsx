@@ -1,10 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
 import { router } from 'expo-router';
-import { useAppTheme } from '../../src/utils/theme';
+import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Button } from '../../src/components/buttons/Button';
+import { COLORS, SPACING, TYPOGRAPHY } from '../../src/constants';
 import { useAuth } from '../../src/contexts/AuthContext';
-import { Button } from '../../src/components/ui/Button';
-import { COLORS, TYPOGRAPHY, SPACING } from '../../src/constants';
+import { useAppTheme } from '../../src/utils/theme';
 
 export default function ProfileScreen() {
   const { colors } = useAppTheme();

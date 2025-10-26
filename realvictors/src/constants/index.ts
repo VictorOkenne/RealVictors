@@ -24,48 +24,10 @@ export const SPORTS = {
     positions: ['Goalkeeper', 'Defender', 'Midfielder', 'Forward'],
     stats: ['goals', 'assists', 'shots', 'shots_on_target', 'passes', 'pass_accuracy', 'tackles', 'interceptions', 'yellow_cards', 'red_cards'],
   },
-  volleyball: {
-    name: 'Volleyball',
-    icon: '🏐',
-    color: '#FF4444',
-    colorLight: '#FFEBEE',
-    positions: ['Setter', 'Outside Hitter', 'Middle Blocker', 'Opposite Hitter', 'Libero', 'Defensive Specialist'],
-    stats: ['spikes', 'blocks', 'aces', 'digs', 'sets', 'service_errors', 'attack_errors'],
-  },
-  hockey: {
-    name: 'Hockey',
-    icon: '🏒',
-    color: '#2196F3',
-    colorLight: '#E3F2FD',
-    positions: ['Center', 'Left Wing', 'Right Wing', 'Left Defense', 'Right Defense', 'Goalie'],
-    stats: ['goals', 'assists', 'shots', 'hits', 'blocked_shots', 'penalty_minutes', 'plus_minus', 'faceoff_wins', 'faceoff_losses'],
-  },
-  tennis: {
-    name: 'Tennis',
-    icon: '🎾',
-    color: '#9C27B0',
-    colorLight: '#F3E5F5',
-    positions: ['Singles', 'Doubles'],
-    stats: ['matches_won', 'matches_lost', 'sets_won', 'sets_lost', 'aces', 'double_faults', 'winners', 'unforced_errors'],
-  },
-  baseball: {
-    name: 'Baseball',
-    icon: '⚾',
-    color: '#795548',
-    colorLight: '#EFEBE9',
-    positions: ['Pitcher', 'Catcher', 'First Base', 'Second Base', 'Third Base', 'Shortstop', 'Left Field', 'Center Field', 'Right Field'],
-    stats: ['batting_average', 'home_runs', 'rbis', 'runs', 'hits', 'strikeouts', 'walks', 'stolen_bases', 'era', 'wins', 'losses'],
-  },
 } as const;
 
 // Game type configuration
 export const GAME_TYPES = {
-  pickup: {
-    name: 'Pickup Game',
-    description: 'Casual games open to individual players',
-    icon: '🏃',
-    color: '#FF6B35',
-  },
   exhibition: {
     name: 'Exhibition',
     description: 'Team vs team friendly matches',
@@ -263,6 +225,13 @@ export const TYPOGRAPHY = {
     bold: 'Montserrat_700Bold',
     extrabold: 'Montserrat_800ExtraBold',
     black: 'Montserrat_900Black',
+    // Custom fonts for specific components
+    satoshi: 'System', // Fallback to system font until Satoshi is added
+    satoshiMedium: 'System', // Use system font as fallback
+    satoshiBold: 'System', // Use system font as fallback
+    orbitron: 'Orbitron_400Regular',
+    orbitronMedium: 'Orbitron_500Medium',
+    orbitronBold: 'Orbitron_700Bold',
   },
   fontSize: {
     xs: 10,
