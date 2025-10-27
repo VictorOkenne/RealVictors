@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 4,
-    backgroundColor: COLORS.gold,
+    backgroundColor: "#F8C300",
     borderRadius: 2,
   },
 });

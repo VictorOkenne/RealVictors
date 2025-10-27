@@ -8,29 +8,21 @@
 import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { COLORS, TYPOGRAPHY } from '../../../constants';
-import { FormationField } from '../../widgets';
-import { FormationLayout, Player } from './mockData';
+import { FormationField, UnifiedBench } from '../../widgets';
+import { formations, MatchData, Team } from './mockData';
 
 interface LineupViewProps {
-  homeTeam: {
-    name: string;
-    logo: string;
-    formation: FormationLayout;
-    players: Player[];
-    primaryColor: string;
-  };
-  awayTeam: {
-    name: string;
-    logo: string;
-    formation: FormationLayout;
-    players: Player[];
-    primaryColor: string;
-  };
+  homeTeam: Team;
+  awayTeam: Team;
+  homeSubstitutions: MatchData['homeSubstitutions'];
+  awaySubstitutions: MatchData['awaySubstitutions'];
 }
 
 export const LineupView: React.FC<LineupViewProps> = ({
   homeTeam,
   awayTeam,
+  homeSubstitutions,
+  awaySubstitutions,
 }) => {
   return (
     <View style={styles.container}>
@@ -47,10 +39,12 @@ export const LineupView: React.FC<LineupViewProps> = ({
         </View>
         
         <FormationField
-          formation={homeTeam.formation}
+          formation={formations[homeTeam.formation]}
           players={homeTeam.players}
-          teamColor={homeTeam.primaryColor}
+          team={homeTeam}
+          isAwayTeam={false}
         />
+        
       </View>
 
       {/* Away Team Lineup */}
@@ -66,11 +60,28 @@ export const LineupView: React.FC<LineupViewProps> = ({
         </View>
         
         <FormationField
-          formation={awayTeam.formation}
+          formation={formations[awayTeam.formation]}
           players={awayTeam.players}
-          teamColor={awayTeam.primaryColor}
+          team={awayTeam}
+          isAwayTeam={true}
         />
       </View>
+
+      {/* Unified Bench */}
+      <UnifiedBench
+        homeTeam={{
+          name: homeTeam.name,
+          logo: homeTeam.logo,
+          bench: homeTeam.bench,
+          primaryColor: homeTeam.primaryColor,
+        }}
+        awayTeam={{
+          name: awayTeam.name,
+          logo: awayTeam.logo,
+          bench: awayTeam.bench,
+          primaryColor: awayTeam.primaryColor,
+        }}
+      />
     </View>
   );
 };

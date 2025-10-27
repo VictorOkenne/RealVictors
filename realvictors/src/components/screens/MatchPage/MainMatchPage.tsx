@@ -9,19 +9,19 @@
 
 import React, { useRef, useState } from 'react';
 import {
-  Animated,
-  Dimensions,
-  PanResponder,
-  StatusBar,
-  StyleSheet,
-  View
+    Animated,
+    Dimensions,
+    PanResponder,
+    StatusBar,
+    StyleSheet,
+    View
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '../../../constants';
 import {
-  MatchHeaderCard,
-  MatchTab,
-  MatchTabNavigation,
+    MatchHeaderCard,
+    MatchTab,
+    MatchTabNavigation,
 } from '../../widgets';
 import { LineupView } from './LineupView';
 import { formations, mockMatchData } from './mockData';
@@ -127,20 +127,10 @@ export const MainMatchPage: React.FC<MainMatchPageProps> = ({ onBackPress }) => 
       case 'lineups':
         return (
           <LineupView
-            homeTeam={{
-              name: mockMatchData.homeTeam.name,
-              logo: mockMatchData.homeTeam.logo,
-              formation: homeFormation,
-              players: mockMatchData.homeTeam.players,
-              primaryColor: mockMatchData.homeTeam.primaryColor,
-            }}
-            awayTeam={{
-              name: mockMatchData.awayTeam.name,
-              logo: mockMatchData.awayTeam.logo,
-              formation: awayFormation,
-              players: mockMatchData.awayTeam.players,
-              primaryColor: mockMatchData.awayTeam.primaryColor,
-            }}
+            homeTeam={mockMatchData.homeTeam}
+            awayTeam={mockMatchData.awayTeam}
+            homeSubstitutions={mockMatchData.homeSubstitutions}
+            awaySubstitutions={mockMatchData.awaySubstitutions}
           />
         );
       case 'overview':
@@ -153,20 +143,10 @@ export const MainMatchPage: React.FC<MainMatchPageProps> = ({ onBackPress }) => 
         return <TeamStatsView />;
       default:
         return <LineupView
-          homeTeam={{
-            name: mockMatchData.homeTeam.name,
-            logo: mockMatchData.homeTeam.logo,
-            formation: homeFormation,
-            players: mockMatchData.homeTeam.players,
-            primaryColor: mockMatchData.homeTeam.primaryColor,
-          }}
-          awayTeam={{
-            name: mockMatchData.awayTeam.name,
-            logo: mockMatchData.awayTeam.logo,
-            formation: awayFormation,
-            players: mockMatchData.awayTeam.players,
-            primaryColor: mockMatchData.awayTeam.primaryColor,
-          }}
+          homeTeam={mockMatchData.homeTeam}
+          awayTeam={mockMatchData.awayTeam}
+          homeSubstitutions={mockMatchData.homeSubstitutions}
+          awaySubstitutions={mockMatchData.awaySubstitutions}
         />;
     }
   };

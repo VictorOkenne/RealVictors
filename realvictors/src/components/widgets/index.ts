@@ -15,10 +15,13 @@ export { NotificationBadge } from './AppWide/NotificationBadge';
 export { TabFilter } from './AppWide/TabFilter';
 
 // MatchGame Widgets
+export { Bench } from './MatchGame/Bench';
 export { FormationField } from './MatchGame/FormationField';
 export { FormBadge } from './MatchGame/FormBadge';
 export { MatchHeaderCard } from './MatchGame/MatchHeaderCard';
 export { MatchTabNavigation, type MatchTab } from './MatchGame/MatchTabNavigation';
+export { Substitutions } from './MatchGame/Substitutions';
+export { UnifiedBench } from './MatchGame/UnifiedBench';
 export { UpcomingGameCard } from './MatchGame/UpcomingGameCard';
 
 // Player Widgets

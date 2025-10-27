@@ -12,7 +12,7 @@ import { COLORS, TYPOGRAPHY } from '../../../constants';
 interface PlayerCardProps {
   name: string;
   number: number;
-  image?: string;
+  jerseyImage?: string;
   teamColor?: string;
   size?: 'small' | 'medium' | 'large';
   style?: ViewStyle;
@@ -21,7 +21,7 @@ interface PlayerCardProps {
 export const PlayerCard: React.FC<PlayerCardProps> = ({
   name,
   number,
-  image,
+  jerseyImage,
   teamColor = COLORS.black,
   size = 'medium',
   style,
@@ -51,13 +51,13 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
 
   return (
     <View style={[styles.container, style]}>
-      {/* Player Image */}
+      {/* Jersey Image */}
       <View style={[styles.imageContainer, { marginBottom: -currentSize.badgeSize * 0.65 }]}>
-        {image ? (
+        {jerseyImage ? (
           <Image
-            source={{ uri: image }}
+            source={{ uri: jerseyImage }}
             style={[
-              styles.playerImage,
+              styles.jerseyImage,
               {
                 width: currentSize.imageSize,
                 height: currentSize.imageSize,
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     zIndex: 1,
   },
-  playerImage: {
+  jerseyImage: {
     borderRadius: 100,
     resizeMode: 'cover',
   },

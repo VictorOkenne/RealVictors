@@ -8,7 +8,7 @@
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { COLORS, TYPOGRAPHY } from '../../../constants';
-import { LocationIcon } from '../../icons';
+import { LocationIcon, MatchShareIcon } from '../../icons';
 import { FormBadge } from './FormBadge';
 
 type FormResult = 'W' | 'L' | 'D';
@@ -62,7 +62,7 @@ export const MatchHeaderCard: React.FC<MatchHeaderCardProps> = ({
         <Text style={styles.title}>Previous Match</Text>
         
         <TouchableOpacity onPress={onSharePress} style={styles.shareButton}>
-          <Text style={styles.shareIcon}>⇪</Text>
+          <MatchShareIcon size={20} color={COLORS.white} />
         </TouchableOpacity>
       </View>
 
@@ -167,10 +167,6 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  shareIcon: {
-    fontSize: 22,
-    color: COLORS.white,
   },
   leagueRow: {
     flexDirection: 'row',

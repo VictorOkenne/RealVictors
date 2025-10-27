@@ -14,6 +14,7 @@ export { HeartIcon } from './HeartIcon';
 export { InstagramIcon } from './InstagramIcon';
 export { LinkIcon } from './LinkIcon';
 export { LocationIcon } from './LocationIcon';
+export { MatchShareIcon } from './MatchShareIcon';
 export { MessageIcon } from './MessageIcon';
 export { NotificationIcon } from './NotificationIcon';
 export { RealVictorsLogo } from './RealVictorsLogo';
