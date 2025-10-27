@@ -134,7 +134,7 @@ export const MainMatchPage: React.FC<MainMatchPageProps> = ({ onBackPress }) => 
           />
         );
       case 'overview':
-        return <OverviewView />;
+        return <OverviewView matchData={mockMatchData} />;
       case 'stats':
         return <StatsView />;
       case 'recap':
