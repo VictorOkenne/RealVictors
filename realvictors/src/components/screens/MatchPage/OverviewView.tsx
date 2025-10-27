@@ -23,7 +23,11 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ matchData }) => {
   const renderEventIcon = (event: MatchEvent) => {
     switch (event.type) {
       case 'goal':
-        return <Text style={styles.eventIcon}>⚽</Text>;
+        return (
+          <View style={styles.goalIcon}>
+            <Text style={styles.goalEmoji}>⚽</Text>
+          </View>
+        );
       case 'yellow_card':
         return <View style={styles.yellowCard} />;
       case 'red_card':
@@ -31,8 +35,12 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ matchData }) => {
       case 'substitution':
         return (
           <View style={styles.substitutionIcons}>
-            <Text style={styles.subIconOut}>↓</Text>
-            <Text style={styles.subIconIn}>↑</Text>
+            <View style={styles.subIconContainer}>
+              <Text style={styles.subIconText}>↓</Text>
+            </View>
+            <View style={styles.subIconContainer}>
+              <Text style={styles.subIconText}>↑</Text>
+            </View>
           </View>
         );
       case 'halftime':
@@ -45,71 +53,122 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ matchData }) => {
   };
 
   const renderEvent = (event: MatchEvent) => {
-    // Handle halftime and fulltime differently
-    if (event.type === 'halftime' || event.type === 'fulltime') {
+    // Handle match start, halftime and fulltime as dividers
+    if (event.type === 'halftime') {
+      // Calculate halftime score by counting goals before halftime
+      let homeHalftimeScore = 0;
+      let awayHalftimeScore = 0;
+      matchData.events.forEach(e => {
+        if (e.minute <= 45 && e.type === 'goal') {
+          if (e.team === 'home') homeHalftimeScore++;
+          else if (e.team === 'away') awayHalftimeScore++;
+        }
+      });
       return (
-        <View key={event.id} style={styles.halftimeContainer}>
-          <View style={styles.halftimeLine} />
-          <Text style={styles.halftimeText}>{event.description}</Text>
-          <View style={styles.halftimeLine} />
+        <View key={event.id} style={styles.timelineDivider}>
+          <Text style={styles.dividerText}>HALF TIME {homeHalftimeScore}-{awayHalftimeScore}</Text>
+        </View>
+      );
+    }
+
+    if (event.type === 'fulltime') {
+      return (
+        <View key={event.id} style={styles.timelineDivider}>
+          <Text style={styles.dividerText}>FINAL TIME {matchData.homeScore}-{matchData.awayScore}</Text>
         </View>
       );
     }
 
     const isHomeTeam = event.team === 'home';
-    const teamColor = isHomeTeam ? matchData.homeTeam.primaryColor : matchData.awayTeam.primaryColor;
+    const jerseyImage = isHomeTeam
+      ? matchData.homeTeam.jerseys.home
+      : matchData.awayTeam.jerseys.away;
 
+    // For substitutions, render differently
+    if (event.type === 'substitution' && event.substitution) {
+      return (
+        <View key={event.id} style={[styles.timelineEvent, isHomeTeam ? styles.homeEvent : styles.awayEvent]}>
+          {isHomeTeam ? (
+            <>
+              <View style={styles.timeBadge}>
+                <Text style={styles.timeText}>{event.minute}</Text>
+              </View>
+              <View style={styles.playerInfoContainer}>
+                <View style={styles.jerseyContainer}>
+                  <Image source={{ uri: jerseyImage }} style={styles.jerseyImage} />
+                  <View style={styles.playerBadge}>
+                    <Text style={styles.playerName}>{event.substitution.playerIn.name}</Text>
+                    {renderEventIcon(event)}
+                    <Text style={styles.playerName}>{event.substitution.playerOut.name}</Text>
+                  </View>
+                </View>
+              </View>
+              <View style={styles.spacer} />
+            </>
+          ) : (
+            <>
+              <View style={styles.spacer} />
+              <View style={styles.playerInfoContainer}>
+                <View style={styles.jerseyContainer}>
+                  <Image source={{ uri: jerseyImage }} style={styles.jerseyImage} />
+                  <View style={styles.playerBadge}>
+                    {renderEventIcon(event)}
+                    <Text style={styles.playerName}>{event.substitution.playerIn.name}</Text>
+                    <Text style={styles.playerName}>{event.substitution.playerOut.name}</Text>
+                  </View>
+                </View>
+              </View>
+              <View style={styles.timeBadge}>
+                <Text style={styles.timeText}>{event.minute}</Text>
+              </View>
+            </>
+          )}
+        </View>
+      );
+    }
+
+    // Regular events (goals, cards)
     return (
-      <View key={event.id} style={styles.eventRow}>
-        {/* Left side - Home team events */}
-        <View style={[styles.eventSide, styles.eventSideLeft]}>
-          {isHomeTeam && event.type !== 'substitution' && (
-            <View style={styles.eventContent}>
-              <Text style={styles.playerName}>{event.player?.name}</Text>
-              {event.type === 'goal' && event.assistPlayer && (
-                <Text style={styles.assistText}>Assist: {event.assistPlayer.name}</Text>
-              )}
+      <View key={event.id} style={[styles.timelineEvent, isHomeTeam ? styles.homeEvent : styles.awayEvent]}>
+        {isHomeTeam ? (
+          <>
+            <View style={styles.timeBadge}>
+              <Text style={styles.timeText}>{event.minute}</Text>
             </View>
-          )}
-          {isHomeTeam && event.type === 'substitution' && event.substitution && (
-            <View style={styles.eventContent}>
-              <View style={styles.substitutionContent}>
-                <Text style={styles.playerNameSub}>{event.substitution.playerIn.name}</Text>
-                <Text style={styles.playerNameSub}>{event.substitution.playerOut.name}</Text>
+            <View style={styles.playerInfoContainer}>
+              <View style={styles.jerseyContainer}>
+                <Image source={{ uri: jerseyImage }} style={styles.jerseyImage} />
+                <View style={styles.playerBadge}>
+                  <Text style={styles.playerName}>{event.player?.name}</Text>
+                  {renderEventIcon(event)}
+                  {event.assistPlayer && (
+                    <Text style={styles.assistName}>{event.assistPlayer.name}</Text>
+                  )}
+                </View>
               </View>
             </View>
-          )}
-        </View>
-
-        {/* Center - Time and Icon */}
-        <View style={styles.eventCenter}>
-          <View style={[styles.timeCircle, { borderColor: teamColor }]}>
-            <Text style={[styles.timeText, { color: teamColor }]}>{event.minute}'</Text>
-          </View>
-          <View style={styles.iconContainer}>
-            {renderEventIcon(event)}
-          </View>
-        </View>
-
-        {/* Right side - Away team events */}
-        <View style={[styles.eventSide, styles.eventSideRight]}>
-          {!isHomeTeam && event.type !== 'substitution' && (
-            <View style={styles.eventContent}>
-              <Text style={styles.playerName}>{event.player?.name}</Text>
-              {event.type === 'goal' && event.assistPlayer && (
-                <Text style={styles.assistText}>Assist: {event.assistPlayer.name}</Text>
-              )}
-            </View>
-          )}
-          {!isHomeTeam && event.type === 'substitution' && event.substitution && (
-            <View style={styles.eventContent}>
-              <View style={styles.substitutionContent}>
-                <Text style={styles.playerNameSub}>{event.substitution.playerIn.name}</Text>
-                <Text style={styles.playerNameSub}>{event.substitution.playerOut.name}</Text>
+            <View style={styles.spacer} />
+          </>
+        ) : (
+          <>
+            <View style={styles.spacer} />
+            <View style={styles.playerInfoContainer}>
+              <View style={styles.jerseyContainer}>
+                <Image source={{ uri: jerseyImage }} style={styles.jerseyImage} />
+                <View style={styles.playerBadge}>
+                  {renderEventIcon(event)}
+                  <Text style={styles.playerName}>{event.player?.name}</Text>
+                  {event.assistPlayer && (
+                    <Text style={styles.assistName}>{event.assistPlayer.name}</Text>
+                  )}
+                </View>
               </View>
             </View>
-          )}
-        </View>
+            <View style={styles.timeBadge}>
+              <Text style={styles.timeText}>{event.minute}</Text>
+            </View>
+          </>
+        )}
       </View>
     );
   };
@@ -140,14 +199,17 @@ export const OverviewView: React.FC<OverviewViewProps> = ({ matchData }) => {
         </View>
       </View>
 
-      {/* Match Status */}
-      <View style={styles.statusContainer}>
-        <Text style={styles.statusText}>Full Time</Text>
-      </View>
-
       {/* Timeline */}
       <View style={styles.timeline}>
+        {/* Timeline line */}
+        <View style={styles.timelineLine} />
+
         {sortedEvents.map(renderEvent)}
+
+        {/* Match starts divider */}
+        <View style={styles.timelineDivider}>
+          <Text style={styles.dividerText}>MATCH STARTS</Text>
+        </View>
       </View>
     </ScrollView>
   );
@@ -159,8 +221,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   contentContainer: {
-    padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 60,
   },
 
   // Score Header
@@ -171,7 +232,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.gray50,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 30,
+    marginHorizontal: 16,
+    marginTop: 16,
   },
   teamSection: {
     flexDirection: 'row',
@@ -209,139 +272,149 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
   },
 
-  // Status
-  statusContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  statusText: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: TYPOGRAPHY.fontSize.sm,
-    color: COLORS.gray600,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-
   // Timeline
   timeline: {
-    gap: 12,
+    position: 'relative',
+    paddingBottom: 60,
+  },
+  timelineLine: {
+    position: 'absolute',
+    left: '50%',
+    top: 0,
+    bottom: 0,
+    width: 1,
+    backgroundColor: COLORS.gray200,
+    marginLeft: -0.5,
   },
 
-  // Event Row
-  eventRow: {
+  // Timeline Event
+  timelineEvent: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    minHeight: 60,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 21,
+    gap: 20,
   },
-  eventSide: {
-    flex: 1,
-    justifyContent: 'center',
+  homeEvent: {
+    justifyContent: 'flex-start',
   },
-  eventSideLeft: {
-    alignItems: 'flex-end',
-    paddingRight: 12,
-  },
-  eventSideRight: {
-    alignItems: 'flex-start',
-    paddingLeft: 12,
-  },
-  eventContent: {
-    maxWidth: '90%',
-  },
-  playerName: {
-    fontFamily: TYPOGRAPHY.fontFamily.semibold,
-    fontSize: TYPOGRAPHY.fontSize.base,
-    color: COLORS.black,
-  },
-  assistText: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    fontSize: TYPOGRAPHY.fontSize.xs,
-    color: COLORS.gray600,
-    marginTop: 2,
-  },
-  substitutionContent: {
-    gap: 4,
-  },
-  playerNameSub: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    fontSize: TYPOGRAPHY.fontSize.sm,
-    color: COLORS.black,
+  awayEvent: {
+    justifyContent: 'flex-end',
   },
 
-  // Event Center
-  eventCenter: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  timeCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 2,
+  // Time Badge
+  timeBadge: {
+    width: 49,
+    height: 49,
+    borderRadius: 24.5,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.gray200,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.white,
+    zIndex: 2,
   },
   timeText: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: TYPOGRAPHY.fontSize.sm,
+    fontSize: TYPOGRAPHY.fontSize.lg,
+    color: COLORS.black,
   },
-  iconContainer: {
+
+  // Player Info
+  playerInfoContainer: {
+    flex: 0,
+  },
+  jerseyContainer: {
+    position: 'relative',
+    alignItems: 'center',
+  },
+  jerseyImage: {
+    width: 89,
+    height: 67,
+    borderRadius: 5,
+    resizeMode: 'cover',
+  },
+  playerBadge: {
+    position: 'absolute',
+    bottom: -5,
+    backgroundColor: 'rgba(216, 216, 216, 0.5)',
+    paddingVertical: 3,
+    paddingHorizontal: 7,
+    borderRadius: 334,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+  },
+  playerName: {
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    fontSize: TYPOGRAPHY.fontSize.lg,
+    color: COLORS.black,
+  },
+  assistName: {
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    fontSize: TYPOGRAPHY.fontSize.sm,
+    color: '#827f7f',
+  },
+
+  // Event Icons
+  goalIcon: {
+    width: 23,
+    height: 23,
+    borderRadius: 11.5,
+    backgroundColor: COLORS.black,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 24,
   },
-  eventIcon: {
-    fontSize: 20,
+  goalEmoji: {
+    fontSize: 16,
   },
   yellowCard: {
-    width: 14,
+    width: 15,
     height: 20,
-    backgroundColor: '#FFEB3B',
+    backgroundColor: '#FFD700',
     borderRadius: 2,
-    borderWidth: 1,
-    borderColor: '#FDD835',
   },
   redCard: {
-    width: 14,
+    width: 15,
     height: 20,
-    backgroundColor: '#F44336',
+    backgroundColor: '#FF5757',
     borderRadius: 2,
-    borderWidth: 1,
-    borderColor: '#D32F2F',
   },
   substitutionIcons: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
   },
-  subIconOut: {
-    fontSize: 16,
-    color: COLORS.error,
+  subIconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  subIconIn: {
+  subIconText: {
     fontSize: 16,
-    color: COLORS.success,
+    color: COLORS.black,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
 
-  // Halftime
-  halftimeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 8,
-  },
-  halftimeLine: {
+  // Spacer
+  spacer: {
     flex: 1,
-    height: 1,
-    backgroundColor: COLORS.gray300,
   },
-  halftimeText: {
+
+  // Timeline Divider
+  timelineDivider: {
+    backgroundColor: COLORS.gray200,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 35,
+    position: 'relative',
+    zIndex: 1,
+  },
+  dividerText: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: TYPOGRAPHY.fontSize.sm,
-    color: COLORS.gray600,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginHorizontal: 12,
+    fontSize: TYPOGRAPHY.fontSize.lg,
+    color: COLORS.black,
+    letterSpacing: 0.5,
   },
 });
 
