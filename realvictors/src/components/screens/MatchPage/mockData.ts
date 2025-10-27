@@ -233,6 +233,22 @@ export interface Substitution {
 }
 
 /**
+ * Match Event Types
+ */
+export type MatchEventType = 'goal' | 'yellow_card' | 'red_card' | 'substitution' | 'halftime' | 'fulltime';
+
+export interface MatchEvent {
+  id: string;
+  type: MatchEventType;
+  minute: number;
+  team: 'home' | 'away';
+  player?: Player;
+  assistPlayer?: Player;
+  substitution?: Substitution;
+  description?: string;
+}
+
+/**
  * Team Data Interface
  */
 export interface Team {
@@ -275,6 +291,7 @@ export interface MatchData {
   status: 'upcoming' | 'live' | 'finished';
   homeSubstitutions: Substitution[];
   awaySubstitutions: Substitution[];
+  events: MatchEvent[];
 }
 
 /**
@@ -394,6 +411,135 @@ export const mockMatchData: MatchData = {
       playerIn: { id: 'p26', name: 'Bench4', number: 15, position: 'MID', jerseyType: 'away' },
       minute: 82,
       reason: 'tactical',
+    },
+  ],
+  events: [
+    // First Half
+    {
+      id: 'event-1',
+      type: 'goal',
+      minute: 12,
+      team: 'home',
+      player: { id: 'p10', name: 'Sambaris', number: 9, position: 'ST', jerseyType: 'home' },
+      assistPlayer: { id: 'p9', name: 'Emmai', number: 7, position: 'LW', jerseyType: 'home' },
+      description: 'Great team play!',
+    },
+    {
+      id: 'event-2',
+      type: 'yellow_card',
+      minute: 23,
+      team: 'away',
+      player: { id: 'p19', name: 'Osaji', number: 29, position: 'CM', jerseyType: 'away' },
+      description: 'Tactical foul',
+    },
+    {
+      id: 'event-3',
+      type: 'goal',
+      minute: 34,
+      team: 'away',
+      player: { id: 'p21', name: 'Sambaris', number: 9, position: 'ST', jerseyType: 'away' },
+      assistPlayer: { id: 'p20', name: 'Emmai', number: 7, position: 'LW', jerseyType: 'away' },
+      description: 'Beautiful finish!',
+    },
+    {
+      id: 'event-4',
+      type: 'yellow_card',
+      minute: 41,
+      team: 'home',
+      player: { id: 'p5', name: 'Bryan', number: 33, position: 'RB', jerseyType: 'home' },
+      description: 'Late challenge',
+    },
+    {
+      id: 'event-5',
+      type: 'halftime',
+      minute: 45,
+      team: 'home',
+      description: 'Half Time',
+    },
+    // Second Half
+    {
+      id: 'event-6',
+      type: 'goal',
+      minute: 58,
+      team: 'home',
+      player: { id: 'p11', name: 'Martins', number: 11, position: 'RW', jerseyType: 'home' },
+      description: 'Solo effort!',
+    },
+    {
+      id: 'event-7',
+      type: 'substitution',
+      minute: 60,
+      team: 'away',
+      substitution: {
+        id: 'sub3',
+        playerOut: { id: 'p19', name: 'Osaji', number: 29, position: 'CM', jerseyType: 'away' },
+        playerIn: { id: 'p25', name: 'Bench3', number: 14, position: 'DEF', jerseyType: 'away' },
+        minute: 60,
+        reason: 'tactical',
+      },
+    },
+    {
+      id: 'event-8',
+      type: 'substitution',
+      minute: 65,
+      team: 'home',
+      substitution: {
+        id: 'sub1',
+        playerOut: { id: 'p9', name: 'Emmai', number: 7, position: 'LW', jerseyType: 'home' },
+        playerIn: { id: 'p15', name: 'Bench4', number: 15, position: 'MID', jerseyType: 'home' },
+        minute: 65,
+        reason: 'tactical',
+      },
+    },
+    {
+      id: 'event-9',
+      type: 'yellow_card',
+      minute: 72,
+      team: 'home',
+      player: { id: 'p7', name: 'Patrick', number: 41, position: 'CM', jerseyType: 'home' },
+      description: 'Unsporting behavior',
+    },
+    {
+      id: 'event-10',
+      type: 'substitution',
+      minute: 78,
+      team: 'home',
+      substitution: {
+        id: 'sub2',
+        playerOut: { id: 'p7', name: 'Patrick', number: 41, position: 'CM', jerseyType: 'home' },
+        playerIn: { id: 'p16', name: 'Bench5', number: 16, position: 'MID', jerseyType: 'home' },
+        minute: 78,
+        reason: 'injury',
+      },
+    },
+    {
+      id: 'event-11',
+      type: 'goal',
+      minute: 81,
+      team: 'away',
+      player: { id: 'p22', name: 'Martins', number: 11, position: 'RW', jerseyType: 'away' },
+      assistPlayer: { id: 'p18', name: 'Patrick', number: 41, position: 'CM', jerseyType: 'away' },
+      description: 'Clinical finish!',
+    },
+    {
+      id: 'event-12',
+      type: 'substitution',
+      minute: 82,
+      team: 'away',
+      substitution: {
+        id: 'sub4',
+        playerOut: { id: 'p21', name: 'Sambaris', number: 9, position: 'ST', jerseyType: 'away' },
+        playerIn: { id: 'p26', name: 'Bench4', number: 15, position: 'MID', jerseyType: 'away' },
+        minute: 82,
+        reason: 'tactical',
+      },
+    },
+    {
+      id: 'event-13',
+      type: 'fulltime',
+      minute: 90,
+      team: 'home',
+      description: 'Full Time',
     },
   ],
 };
