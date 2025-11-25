@@ -7,23 +7,22 @@
 
 import React, { useState } from 'react';
 import {
-  Dimensions,
-  Image,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
-  ViewStyle,
+    Dimensions,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
+    ViewStyle
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, TYPOGRAPHY } from '../../../constants';
 import { SendIcon } from '../../icons';
+import { PlayerAvatar } from '../Player/PlayerAvatar';
 import { Comment } from './Comment';
 
 interface CommentData {
@@ -33,6 +32,7 @@ interface CommentData {
     initials: string;
     avatarColor: string;
     avatar?: string;
+    profileImage?: any;
   };
   timeAgo: string;
   text: string;
@@ -48,6 +48,7 @@ interface CommentsModalProps {
     avatar?: string;
     initials: string;
     avatarColor: string;
+    profileImage?: any;
   };
   onSendComment?: (text: string) => void;
   style?: ViewStyle;
@@ -122,18 +123,12 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
                   <View style={styles.inputContainer}>
                     <View style={styles.inputArea}>
                       {/* User Avatar */}
-                      {currentUser.avatar ? (
-                        <Image source={{ uri: currentUser.avatar }} style={styles.currentUserAvatar} />
-                      ) : (
-                        <View style={[
-                          styles.currentUserAvatarPlaceholder,
-                          { backgroundColor: currentUser.avatarColor }
-                        ]}>
-                          <Text style={styles.currentUserAvatarText}>
-                            {currentUser.initials}
-                          </Text>
-                        </View>
-                      )}
+                      <PlayerAvatar
+                        profileImage={currentUser.profileImage}
+                        size={32}
+                        circularBackground={true}
+                        backgroundColor={currentUser.avatarColor}
+                      />
 
                       {/* Text Input */}
                       <View style={styles.inputWrapper}>
@@ -227,23 +222,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 10,
-  },
-  currentUserAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-  },
-  currentUserAvatarPlaceholder: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  currentUserAvatarText: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 14,
-    color: COLORS.white,
   },
   inputWrapper: {
     flex: 1,

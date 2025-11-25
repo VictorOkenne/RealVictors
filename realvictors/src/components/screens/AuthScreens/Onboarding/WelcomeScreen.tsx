@@ -1,22 +1,22 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect } from 'react';
 import {
-  Dimensions,
-  Image,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
+    Dimensions,
+    Image,
+    StatusBar,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withSpring,
-  withTiming,
+    runOnJS,
+    useAnimatedStyle,
+    useSharedValue,
+    withRepeat,
+    withSequence,
+    withSpring,
+    withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -145,7 +145,7 @@ export const WelcomeScreen = ({ userName = 'User', onContinue }: WelcomeScreenPr
         <View style={styles.backgroundContainer}>
           <View style={styles.overlay} />
           <Image
-            source={require('../../../../assets/Onboarding/Messi_Gold.png')}
+            source={require('../../../../assets/MockData/Onboarding/Messi_Gold.png')}
             style={styles.backgroundImage}
             resizeMode="cover"
           />

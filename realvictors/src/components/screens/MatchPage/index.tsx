@@ -1,13 +1,17 @@
 /**
  * MatchPage Exports
- * 
+ *
  * Main page and all view components
  */
 
+export { HistoryView } from './HistoryView';
 export { LineupView } from './LineupView';
 export { default, MainMatchPage } from './MainMatchPage';
 export { OverviewView } from './OverviewView';
-export { RecapView } from './RecapView';
+export { PreviewView } from './PreviewView';
+export { SquadView } from './SquadView';
 export { StatsView } from './StatsView';
-export { TeamStatsView } from './TeamStatsView';
+export { StatsViewV2 } from './StatsViewV2';
+export { TimelineView } from './TimelineView';
+
 

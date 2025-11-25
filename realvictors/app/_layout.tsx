@@ -13,9 +13,9 @@
  */
 
 import {
-    Orbitron_400Regular,
-    Orbitron_500Medium,
-    Orbitron_700Bold,
+  Orbitron_400Regular,
+  Orbitron_500Medium,
+  Orbitron_700Bold,
 } from '@expo-google-fonts/orbitron';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -27,6 +27,7 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthGuard } from '../src/components/AuthGuard';
 import { AuthProvider } from '../src/contexts/AuthContext';
+import { SportProvider } from '../src/contexts/SportContext';
 
 // Configure React Query client with optimized caching settings
 // This helps improve performance by caching API responses and reducing network requests
@@ -78,29 +79,49 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       {/* Theme provider enables light/dark mode switching */}
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        {/* Auth provider provides global auth state */}
-        <AuthProvider>
-          {/* AuthGuard handles authentication flow and redirects */}
-          <AuthGuard>
-            <Stack>
-              {/* Main app screens - only accessible when authenticated */}
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              {/* Authentication screens - login, signup, onboarding */}
-              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-              {/* Match details screen - full screen view of match information */}
-              <Stack.Screen 
-                name="match" 
-                options={{ 
-                  headerShown: false,
-                  presentation: 'card',
-                  animation: 'slide_from_right',
-                }} 
-              />
-              {/* Modal screens for overlays and popups */}
-              <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-            </Stack>
-          </AuthGuard>
-        </AuthProvider>
+        {/* Sport provider manages app-wide sport mode (soccer/basketball) */}
+        <SportProvider>
+          {/* Auth provider provides global auth state */}
+          <AuthProvider>
+            {/* AuthGuard handles authentication flow and redirects */}
+            <AuthGuard>
+              <Stack>
+                {/* Main app screens - only accessible when authenticated */}
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                {/* Authentication screens - login, signup, onboarding */}
+                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                {/* Match details screen - full screen view of match information */}
+                <Stack.Screen
+                  name="match"
+                  options={{
+                    headerShown: false,
+                    presentation: 'card',
+                    animation: 'slide_from_right',
+                  }}
+                />
+                {/* All games screen - full screen view of all upcoming games */}
+                <Stack.Screen
+                  name="all-games"
+                  options={{
+                    headerShown: false,
+                    presentation: 'card',
+                    animation: 'slide_from_right',
+                  }}
+                />
+                <Stack.Screen
+                  name="highlight-list"
+                  options={{
+                    headerShown: false,
+                    presentation: 'card',
+                    animation: 'slide_from_right',
+                  }}
+                />
+                {/* Modal screens for overlays and popups */}
+                <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+              </Stack>
+            </AuthGuard>
+          </AuthProvider>
+        </SportProvider>
         {/* Status bar that adapts to theme */}
         <StatusBar style="auto" />
       </ThemeProvider>

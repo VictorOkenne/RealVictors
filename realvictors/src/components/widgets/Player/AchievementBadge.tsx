@@ -12,7 +12,7 @@ import { CalendarIcon, StarIcon, TrophyIcon } from '../../icons';
 
 interface AchievementBadgeProps {
   value: number;
-  type: 'champion' | 'matches' | 'overall';
+  type: 'champion' | 'matches' | 'overall' | 'streak' | 'games';
   style?: ViewStyle;
 }
 
@@ -33,6 +33,16 @@ export const AchievementBadge: React.FC<AchievementBadgeProps> = ({ value, type,
       IconComponent: StarIcon,
       suffix: '',
       label: 'Overall',
+    },
+    streak: {
+      IconComponent: StarIcon, // Using star for streak (could be replaced with fire icon)
+      suffix: '',
+      label: 'Win Streak',
+    },
+    games: {
+      IconComponent: CalendarIcon, // Using calendar for games
+      suffix: '',
+      label: 'Games',
     },
   };
 

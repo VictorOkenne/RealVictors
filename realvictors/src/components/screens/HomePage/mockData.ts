@@ -27,11 +27,7 @@
  * 2. Add user's profile image to assets folder
  * 3. Update customProfileImage to point to that image
  */
-export const userProfile = {
-  hasUploadedProfileImage: false, // Set to true when user uploads their profile image
-  // When user uploads their image, it would be stored here:
-  customProfileImage: require('../../../assets/HomePage/Images/userSilhouetteDefault-2.png'),
-};
+// Note: userProfile will be defined after upcomingGames to use the count
 
 /**
  * Season Statistics
@@ -42,6 +38,17 @@ export const seasonStats = [
   { label: 'Rebound', value: '15' },
   { label: 'Wins', value: '20' },
   { label: 'Loss', value: '17' },
+];
+
+/**
+ * Total Statistics
+ * Mock data for the user's total/career stats (all-time)
+ */
+export const totalStats = [
+  { label: 'Points', value: '1,247' },
+  { label: 'Rebound', value: '623' },
+  { label: 'Wins', value: '156' },
+  { label: 'Loss', value: '98' },
 ];
 
 /**
@@ -57,58 +64,69 @@ export const achievements = [3, 5, 79];
  * Upcoming Games
  * Mock data for scheduled games/matches
  * 
- * Note: Team logos still using Figma URLs - no matching local assets found
- * To replace: Add team logo PNG/SVG files to src/assets/HomePage/Images
- * Example: CFC-logo.png, PSG-logo.png
+ * Note: Team logos now using local assets from MatchPage assets folder
+ * Chelsea logo: chelseaLogo.png
+ * PSG logo: psgLogo.png
+ * 
+ * The count of upcoming games is automatically calculated and added to userProfile
  */
 export const upcomingGames = [
   {
     id: '1',
     leagueName: 'Inter state League',
+    tournament: 'UEFA Champions League',
+    sport: 'soccer' as const,
     homeTeam: {
-      name: 'CFC',
-      logo: 'https://www.figma.com/api/mcp/asset/488f361d-6ffa-4179-a73d-168322e544e0',
+      name: 'Real Madrid',
+      logo: require('../../../assets/MockData/MatchPage/chelseaLogo.png'),
     },
     awayTeam: {
-      name: 'PSG',
-      logo: 'https://www.figma.com/api/mcp/asset/adc69dbe-6a80-4904-b459-19d776498a0c',
+      name: 'F.C. Barcelona',
+      logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
     },
-    time: '10:18pm',
-    date: 'Dec 25th',
-    location: 'Stadium road',
-    variant: 'dark' as const,
+    time: '10:18 PM',
+    date: 'Dec 25th, 2025',
+    location: 'Old Trafford',
+    matchStage: 'Group H',
+    leagueLogo: require('../../../assets/MockData/MatchPage/uclLogo.png'),
   },
   {
     id: '2',
     leagueName: 'Inter state League',
+    tournament: 'NBA Finals',
+    sport: 'basketball' as const,
     homeTeam: {
       name: 'CFC',
-      logo: 'https://www.figma.com/api/mcp/asset/488f361d-6ffa-4179-a73d-168322e544e0',
+      logo: require('../../../assets/MockData/MatchPage/chelseaLogo.png'),
     },
     awayTeam: {
       name: 'PSG',
-      logo: 'https://www.figma.com/api/mcp/asset/adc69dbe-6a80-4904-b459-19d776498a0c',
+      logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
     },
     time: '10:18pm',
     date: 'Dec 25th',
     location: 'Stadium road',
-    variant: 'light' as const,
+    matchStage: 'Knockout',
+    leagueLogo: require('../../../assets/MockData/MatchPage/uclLogo.png'),
   },
   {
     id: '3',
     leagueName: 'Inter state League',
+    tournament: 'Premier League',
+    sport: 'soccer' as const,
     homeTeam: {
       name: 'CFC',
-      logo: 'https://www.figma.com/api/mcp/asset/488f361d-6ffa-4179-a73d-168322e544e0',
+      logo: require('../../../assets/MockData/MatchPage/chelseaLogo.png'),
     },
     awayTeam: {
       name: 'PSG',
-      logo: 'https://www.figma.com/api/mcp/asset/adc69dbe-6a80-4904-b459-19d776498a0c',
+      logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
     },
     time: '10:18pm',
     date: 'Dec 25th',
     location: 'Stadium road',
-    variant: 'light' as const,
+    matchStage: 'Match day 3',
+    leagueLogo: require('../../../assets/MockData/MatchPage/uclLogo.png'),
   },
 ];
 
@@ -123,12 +141,13 @@ export const socialPosts = [
       name: 'Michael Huston',
       initials: 'M',
       avatarColor: '#0BA912',
+      profileImage: require('../../../assets/MockData/MatchPage/mbappe.png'),
     },
     timeAgo: 'Just now',
     images: [
-      'https://www.figma.com/api/mcp/asset/2d86aa14-92c9-4e97-849a-ee6465c88ab4',
-      'https://www.figma.com/api/mcp/asset/2ff18402-6165-4872-a92c-0c76213b2da3',
-      'https://www.figma.com/api/mcp/asset/7e09e17b-6f9c-4e2d-a8a0-632171b98857',
+      require('../../../assets/MockData/SocialMedia/socailmeadia1.jpg'),
+      require('../../../assets/MockData/SocialMedia/socailmeadia2.jpg'),
+      require('../../../assets/MockData/SocialMedia/socailmeadia3.jpg'),
     ],
     caption: "Nothing better than watching my son play, This kid is going to be champions one day, I just know it ❤️",
     hashtags: "#Football #Soccer #RealVictors #Footballacademy #academy",
@@ -141,10 +160,11 @@ export const socialPosts = [
       name: 'Michael Huston',
       initials: 'M',
       avatarColor: '#0BA912',
+      profileImage: require('../../../assets/MockData/MatchPage/mbappe.png'),
     },
     timeAgo: 'Just now',
     images: [
-      'https://www.figma.com/api/mcp/asset/2d86aa14-92c9-4e97-849a-ee6465c88ab4',
+      require('../../../assets/MockData/SocialMedia/socailmeadia4.png'),
     ],
     caption: "Nothing better than watching my son play, This kid is going to be champions one day, I just know it ❤️",
     hashtags: "#Football #Soccer #RealVictors #Footballacademy #academy",
@@ -157,9 +177,12 @@ export const socialPosts = [
       name: 'John Huston',
       initials: 'J',
       avatarColor: '#A90B75',
+      profileImage: require('../../../assets/MockData/MatchPage/dembele.png'),
     },
     timeAgo: '2h ago',
-    images: [],
+    images: [
+      require('../../../assets/MockData/SocialMedia/socailmeadia2.jpg'),
+    ],
     caption: "Nothing better than watching my son play, This kid is going to be champions one day, I just know it ❤️",
     hashtags: "#Football #Soccer #RealVictors #Footballacademy #academy",
     likes: '177.5k',
@@ -171,15 +194,32 @@ export const socialPosts = [
       name: 'Oliver Samson',
       initials: 'O',
       avatarColor: '#000862',
+      profileImage: require('../../../assets/MockData/MatchPage/hakimi.png'),
     },
     timeAgo: 'Just now',
-    images: [],
+    images: [
+      require('../../../assets/MockData/SocialMedia/socailmeadia3.jpg'),
+    ],
     caption: "Nothing better than watching my son play, This kid is going to be champions one day, I just know it ❤️",
     hashtags: "#Football #Soccer #RealVictors #Footballacademy #academy",
     likes: '177.5k',
     comments: '2.5k',
   },
 ];
+
+/**
+ * User Profile Data
+ * Mock data for the current user's profile information
+ * 
+ * Note: Defined after upcomingGames to calculate upcomingGamesCount
+ */
+export const userProfile = {
+  hasUploadedProfileImage: true, // Set to true when user uploads their profile image
+  // When user uploads their image, it would be stored here:
+  customProfileImage: require('../../../assets/MockData/MatchPage/cole-palmer.png'),
+  // Number of upcoming games for this user (calculated from upcomingGames array)
+  upcomingGamesCount: upcomingGames.length,
+};
 
 /**
  * Highlight Filter Tabs
@@ -203,60 +243,70 @@ export const friendsList = [
     username: '@Samuel',
     initials: 'U',
     avatarColor: '#0BA912',
+    profileImage: require('../../../assets/MockData/MatchPage/levi-colwill.png'),
   },
   {
     id: 'friend-2',
     username: '@MrAceil',
     initials: 'M',
     avatarColor: '#000862',
+    profileImage: require('../../../assets/MockData/MatchPage/malo-gusto.png'),
   },
   {
     id: 'friend-3',
     username: '@Getthewin',
     initials: 'G',
     avatarColor: '#827F7F',
+    profileImage: require('../../../assets/MockData/MatchPage/marquinhos.png'),
   },
   {
     id: 'friend-4',
     username: '@JohnDoe',
     initials: 'J',
     avatarColor: '#A90B75',
+    profileImage: require('../../../assets/MockData/MatchPage/wesley-fofana.png'),
   },
   {
     id: 'friend-5',
     username: '@SarahK',
     initials: 'S',
     avatarColor: '#0BA4A9',
+    profileImage: require('../../../assets/MockData/MatchPage/marquinhos.png'),
   },
   {
     id: 'friend-6',
     username: '@MikeT',
     initials: 'M',
     avatarColor: '#A97F0B',
+    profileImage: require('../../../assets/MockData/MatchPage/cole-palmer.png'),
   },
   {
     id: 'friend-7',
     username: '@EmilyR',
     initials: 'E',
     avatarColor: '#5A0BA9',
+    profileImage: require('../../../assets/MockData/MatchPage/dembele.png'),
   },
   {
     id: 'friend-8',
     username: '@DavidC',
     initials: 'D',
     avatarColor: '#0B5AA9',
+    profileImage: require('../../../assets/MockData/MatchPage/hakimi.png'),
   },
   {
     id: 'friend-9',
     username: '@LisaP',
     initials: 'L',
     avatarColor: '#0BA970',
+    profileImage: require('../../../assets/MockData/MatchPage/mbappe.png'),
   },
   {
     id: 'friend-10',
     username: '@AlexR',
     initials: 'A',
     avatarColor: '#B50BA9',
+    profileImage: require('../../../assets/MockData/MatchPage/levi-colwill.png'),
   },
 ];
 
@@ -275,6 +325,7 @@ export const commentsData: { [postId: string]: any[] } = {
         name: 'Uju Samuel',
         initials: 'U',
         avatarColor: '#0BA912',
+        profileImage: require('../../../assets/MockData/MatchPage/cole-palmer.png'),
       },
       timeAgo: '3h',
       text: "Went to my kid's football match, i felt so proud watching him play.",
@@ -287,6 +338,7 @@ export const commentsData: { [postId: string]: any[] } = {
         name: 'John Austin',
         initials: 'J',
         avatarColor: '#000862',
+        profileImage: require('../../../assets/MockData/MatchPage/dembele.png'),
       },
       timeAgo: '1h',
       text: "Young talent right there!❤️‍🔥 The kid's got great control on the ball",
@@ -299,6 +351,7 @@ export const commentsData: { [postId: string]: any[] } = {
         name: 'Sam Pocket',
         initials: 'S',
         avatarColor: '#0BA4A9',
+        profileImage: require('../../../assets/MockData/MatchPage/hakimi.png'),
       },
       timeAgo: '1h',
       text: "Wow, your boy's footwork is insane for his age, Future stars in the making",
@@ -311,6 +364,7 @@ export const commentsData: { [postId: string]: any[] } = {
         name: 'Jason Realmon',
         initials: 'J',
         avatarColor: '#A97F0B',
+        profileImage: require('../../../assets/MockData/MatchPage/levi-colwill.png'),
       },
       timeAgo: '1h',
       text: 'Love to see young athlethes putting in the work early. Keep pushing him.',
@@ -323,6 +377,7 @@ export const commentsData: { [postId: string]: any[] } = {
         name: 'Maya Johnson',
         initials: 'M',
         avatarColor: '#A90B75',
+        profileImage: require('../../../assets/MockData/MatchPage/malo-gusto.png'),
       },
       timeAgo: '45m',
       text: 'Such dedication at such a young age! This is inspiring to watch. Keep it up! 🔥',
@@ -335,6 +390,7 @@ export const commentsData: { [postId: string]: any[] } = {
         name: 'David Chen',
         initials: 'D',
         avatarColor: '#0B5AA9',
+        profileImage: require('../../../assets/MockData/MatchPage/marquinhos.png'),
       },
       timeAgo: '30m',
       text: 'The future of football right here! Amazing skills and technique.',
@@ -349,6 +405,7 @@ export const commentsData: { [postId: string]: any[] } = {
         name: 'Sarah Williams',
         initials: 'S',
         avatarColor: '#B50BA9',
+        profileImage: require('../../../assets/MockData/MatchPage/wesley-fofana.png'),
       },
       timeAgo: '2h',
       text: 'This is absolutely beautiful! The passion and dedication shows.',
@@ -361,6 +418,7 @@ export const commentsData: { [postId: string]: any[] } = {
         name: 'Mike Thompson',
         initials: 'M',
         avatarColor: '#0BA950',
+        profileImage: require('../../../assets/MockData/MatchPage/malo-gusto.png'),
       },
       timeAgo: '1h',
       text: 'Incredible talent! Keep nurturing this gift.',
@@ -375,6 +433,7 @@ export const commentsData: { [postId: string]: any[] } = {
         name: 'Emma Davis',
         initials: 'E',
         avatarColor: '#A9500B',
+        profileImage: require('../../../assets/MockData/MatchPage/mbappe.png'),
       },
       timeAgo: '4h',
       text: 'So proud to see young athletes working hard! This is the spirit we need.',
@@ -389,6 +448,7 @@ export const commentsData: { [postId: string]: any[] } = {
         name: 'Alex Rodriguez',
         initials: 'A',
         avatarColor: '#5A0BA9',
+        profileImage: require('../../../assets/MockData/MatchPage/cole-palmer.png'),
       },
       timeAgo: '3h',
       text: 'This level of commitment is what champions are made of! 🏆',
@@ -401,6 +461,7 @@ export const commentsData: { [postId: string]: any[] } = {
         name: 'Lisa Park',
         initials: 'L',
         avatarColor: '#0BA970',
+        profileImage: require('../../../assets/MockData/MatchPage/dembele.png'),
       },
       timeAgo: '2h',
       text: 'Amazing work ethic! The future is bright for this young athlete.',

@@ -1,58 +1,97 @@
 /**
  * MatchTabNavigation Widget
- * 
+ *
  * Tab navigation for match details sections
- * Shows: Lineups, Overview, Stats, Recap, Team Stats
+ * Shows: Lineup, Overview, Stats, Recap, Team Stats
  */
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { COLORS, TYPOGRAPHY } from '../../../constants';
 
-export type MatchTab = 'lineups' | 'overview' | 'stats' | 'recap' | 'teamStats';
+export type MatchTab = 'lineup' | 'overview' | 'timeline' | 'stats' | 'recap' | 'preview' | 'teamForm' | 'squadComparison' | 'history';
 
 interface MatchTabNavigationProps {
   activeTab: MatchTab;
   onTabChange: (tab: MatchTab) => void;
   style?: ViewStyle;
+  tabs?: { id: MatchTab; label: string }[]; // Optional custom tabs array
 }
 
 export const MatchTabNavigation: React.FC<MatchTabNavigationProps> = ({
   activeTab,
   onTabChange,
   style,
+  tabs: customTabs,
 }) => {
-  const tabs: { id: MatchTab; label: string }[] = [
-    { id: 'lineups', label: 'Lineups' },
+  const scrollViewRef = useRef<ScrollView>(null);
+  const tabRefs = useRef<{ [key: string]: View | null }>({});
+
+  // Default tabs for previous/finished games
+  const defaultTabs: { id: MatchTab; label: string }[] = [
     { id: 'overview', label: 'Overview' },
-    { id: 'stats', label: 'Stats' },
+    { id: 'lineup', label: 'Lineup' },
+    { id: 'timeline', label: 'Timeline' },
     { id: 'recap', label: 'Recap' },
-    { id: 'teamStats', label: 'Team Stats' },
+    { id: 'stats', label: 'Stats' },
   ];
+
+  // Use custom tabs if provided, otherwise use default
+  const tabs = customTabs || defaultTabs;
+
+  const handleTabPress = (tabId: MatchTab) => {
+    onTabChange(tabId);
+
+    // Scroll to make the selected tab visible
+    setTimeout(() => {
+      const tabRef = tabRefs.current[tabId];
+      if (tabRef && scrollViewRef.current) {
+        tabRef.measureLayout(
+          scrollViewRef.current as any,
+          (x) => {
+            // Calculate scroll position to center the tab
+            scrollViewRef.current?.scrollTo({
+              x: x - 20, // Offset by padding
+              y: 0,
+              animated: true,
+            });
+          },
+          () => {
+            console.log('Failed to measure tab');
+          }
+        );
+      }
+    }, 100);
+  };
 
   return (
     <View style={[styles.container, style]}>
       <ScrollView
+        ref={scrollViewRef}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
         {tabs.map((tab) => (
-          <TouchableOpacity
+          <View
             key={tab.id}
-            style={styles.tabButton}
-            onPress={() => onTabChange(tab.id)}
+            ref={(ref) => (tabRefs.current[tab.id] = ref)}
           >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === tab.id && styles.tabTextActive,
-              ]}
+            <TouchableOpacity
+              style={styles.tabButton}
+              onPress={() => handleTabPress(tab.id)}
             >
-              {tab.label}
-            </Text>
-            {activeTab === tab.id && <View style={styles.activeIndicator} />}
-          </TouchableOpacity>
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === tab.id && styles.tabTextActive,
+                ]}
+              >
+                {tab.label}
+              </Text>
+              {activeTab === tab.id && <View style={styles.activeIndicator} />}
+            </TouchableOpacity>
+          </View>
         ))}
       </ScrollView>
     </View>

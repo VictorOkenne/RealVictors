@@ -8,10 +8,9 @@
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { COLORS, TYPOGRAPHY } from '../../../constants';
+import { DetailedFormResult } from '../../screens/MatchPage/mockData';
 import { LocationIcon, MatchShareIcon } from '../../icons';
 import { FormBadge } from './FormBadge';
-
-type FormResult = 'W' | 'L' | 'D';
 
 interface MatchHeaderCardProps {
   leagueName: string;
@@ -27,8 +26,10 @@ interface MatchHeaderCardProps {
   awayScore: number;
   date: string;
   location: string;
-  homeForm: FormResult[];
-  awayForm: FormResult[];
+  homeForm: DetailedFormResult[];
+  awayForm: DetailedFormResult[];
+  matchTime?: string; // Time for upcoming games (e.g., "10:00 AM", "7:00 PM")
+  isUpcoming?: boolean; // Flag to indicate if this is an upcoming match
   onBackPress?: () => void;
   onSharePress?: () => void;
   style?: ViewStyle;
@@ -44,6 +45,8 @@ export const MatchHeaderCard: React.FC<MatchHeaderCardProps> = ({
   location,
   homeForm,
   awayForm,
+  matchTime,
+  isUpcoming = false,
   onBackPress,
   onSharePress,
   style,
@@ -58,9 +61,9 @@ export const MatchHeaderCard: React.FC<MatchHeaderCardProps> = ({
         <TouchableOpacity onPress={onBackPress} style={styles.backButton}>
           <Text style={styles.backIcon}>←</Text>
         </TouchableOpacity>
-        
-        <Text style={styles.title}>Previous Match</Text>
-        
+
+        <Text style={styles.title}>{isUpcoming ? 'Upcoming Match' : 'Previous Match'}</Text>
+
         <TouchableOpacity onPress={onSharePress} style={styles.shareButton}>
           <MatchShareIcon size={20} color={COLORS.white} />
         </TouchableOpacity>
@@ -76,21 +79,33 @@ export const MatchHeaderCard: React.FC<MatchHeaderCardProps> = ({
       <View style={styles.teamsContainer}>
         {/* Home Team */}
         <View style={styles.teamSection}>
-          <Image source={{ uri: homeTeam.logo }} style={styles.teamLogo} />
-          <Text style={styles.teamName}>{homeTeam.name}</Text>
+          <Image source={homeTeam.logo} style={styles.teamLogo} />
+          <Text style={styles.teamName} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+            {homeTeam.name}
+          </Text>
         </View>
 
-        {/* Score in the Middle */}
+        {/* Score or Time in the Middle */}
         <View style={styles.scoreContainer}>
-          <Text style={styles.scoreText}>
-            {homeScore} - {awayScore}
-          </Text>
+          {isUpcoming && matchTime ? (
+            <Text style={styles.matchTimeText}>{matchTime}</Text>
+          ) : (
+            <Text style={[
+              styles.scoreText,
+              // Dynamic font sizing for large scores (basketball)
+              (homeScore > 99 || awayScore > 99) && styles.scoreTextLarge,
+            ]}>
+              {homeScore} - {awayScore}
+            </Text>
+          )}
         </View>
 
         {/* Away Team */}
         <View style={styles.teamSection}>
-          <Image source={{ uri: awayTeam.logo }} style={styles.teamLogo} />
-          <Text style={styles.teamName}>{awayTeam.name}</Text>
+          <Image source={awayTeam.logo} style={styles.teamLogo} />
+          <Text style={styles.teamName} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+            {awayTeam.name}
+          </Text>
         </View>
       </View>
 
@@ -104,8 +119,8 @@ export const MatchHeaderCard: React.FC<MatchHeaderCardProps> = ({
       <View style={styles.formRow}>
         {/* Home Team Form */}
         <View style={styles.homeFormContainer}>
-          {homeForm.slice(0, 3).map((result, index) => (
-            <FormBadge key={`home-${index}`} result={result} size={22} />
+          {homeForm.slice(0, 3).map((formItem, index) => (
+            <FormBadge key={`home-${index}`} result={formItem.result} size={22} />
           ))}
         </View>
 
@@ -114,8 +129,8 @@ export const MatchHeaderCard: React.FC<MatchHeaderCardProps> = ({
 
         {/* Away Team Form */}
         <View style={styles.awayFormContainer}>
-          {awayForm.slice(0, 3).map((result, index) => (
-            <FormBadge key={`away-${index}`} result={result} size={22} />
+          {awayForm.slice(0, 3).map((formItem, index) => (
+            <FormBadge key={`away-${index}`} result={formItem.result} size={22} />
           ))}
         </View>
       </View>
@@ -191,7 +206,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     zIndex: 1,
     paddingHorizontal: 40,
-    minWidth: 80, // Ensure score has space
+    minWidth: 120, // Increased to handle larger scores
   },
   scoreText: {
     fontFamily: 'Orbitron_700Bold',
@@ -199,6 +214,17 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontWeight: '700',
     letterSpacing: 1,
+  },
+  scoreTextLarge: {
+    fontSize: 32, // Smaller font for 3-digit scores
+    letterSpacing: 0.5,
+  },
+  matchTimeText: {
+    fontFamily: 'Orbitron_700Bold',
+    fontSize: 36,
+    color: COLORS.white,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   teamsContainer: {
     flexDirection: 'row',

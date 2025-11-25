@@ -1,5 +1,8 @@
 // App constants and configuration
 
+// Export position, skill, and formation constants
+export * from './positions';
+
 export const APP_CONFIG = {
   name: 'RealVictors',
   version: '1.0.0',
@@ -182,6 +185,8 @@ export const COLORS = {
   white: '#FFFFFF',
   gold: '#C59A2E',
   goldLight: '#F5E6A8',
+  goldAccent: '#FFC245',
+  goldAccentLight: '#FFD78E',
   
   // Sport colors (from SPORTS config)
   basketball: '#FF6B35',
@@ -206,6 +211,7 @@ export const COLORS = {
   // Neutral colors
   gray50: '#FAFAFA',
   gray100: '#F5F5F5',
+  gray150: '#EFEFEF',
   gray200: '#EEEEEE',
   gray300: '#E0E0E0',
   gray400: '#BDBDBD',
@@ -213,7 +219,11 @@ export const COLORS = {
   gray600: '#757575',
   gray700: '#616161',
   gray800: '#424242',
+  gray850: '#1C1C1C',
   gray900: '#212121',
+
+  // Text colors
+  textSecondary: '#C4C3C3',
 } as const;
 
 // Typography

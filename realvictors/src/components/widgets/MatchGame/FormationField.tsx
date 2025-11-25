@@ -7,9 +7,9 @@
 
 import React from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
-import Svg, { Circle, ClipPath, Defs, G, Path, Rect } from 'react-native-svg';
-import { COLORS, TYPOGRAPHY } from '../../../constants';
+import { COLORS, TYPOGRAPHY, FORMATION_POSITION_ADJUSTMENTS } from '../../../constants';
 import { FormationLayout, Player, Team } from '../../screens/MatchPage/mockData';
+import { SoccerFieldLayout } from '../AppWide/SoccerFieldLayout';
 import { PlayerCard } from '../Player/PlayerCard';
 
 interface FormationFieldProps {
@@ -32,10 +32,20 @@ export const FormationField: React.FC<FormationFieldProps> = ({
 
   // Function to flip positions for away team
   const getFlippedPosition = (position: { x: number; y: number }) => {
-    if (!isAwayTeam) return position;
+    if (!isAwayTeam) {
+      // Home team: apply horizontal shift to center players within field boundaries
+      return {
+        x: position.x + FORMATION_POSITION_ADJUSTMENTS.home.x,
+        y: position.y + FORMATION_POSITION_ADJUSTMENTS.home.y,
+      };
+    }
+
+    // Away team: flip positions and apply adjustments
+    // The x position is flipped (100 - x) then shifted left slightly
+    // The y position is flipped (100 - y) then shifted down to keep GK in box
     return {
-      x: position.x,
-      y: 100 - position.y, // Flip vertically
+      x: (100 - position.x) - FORMATION_POSITION_ADJUSTMENTS.away.x,
+      y: (100 - position.y) + FORMATION_POSITION_ADJUSTMENTS.away.y,
     };
   };
 
@@ -47,118 +57,27 @@ export const FormationField: React.FC<FormationFieldProps> = ({
     };
   };
 
-  // Function to get formation label position based on team
-  const getFormationLabelStyle = () => {
-    if (isAwayTeam) {
-      // For away team, position at bottom when flipped
-      return {
-        position: 'absolute' as const,
-        bottom: 15,
-        left: 20,
-        zIndex: 10,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 12,
-      };
-    } else {
-      // For home team, position at top
-      return {
-        position: 'absolute' as const,
-        top: 15,
-        left: 20,
-        zIndex: 10,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 12,
-      };
-    }
-  };
 
   return (
     <View style={[styles.container, style]}>
       {/* Formation Name */}
-      <View style={getFormationLabelStyle()}>
+      <View style={[
+        styles.formationLabelContainer,
+        isAwayTeam ? styles.formationLabelBottom : styles.formationLabelTop
+      ]}>
         <Text style={styles.formationText}>Formation: {formation.name}</Text>
       </View>
       {/* Soccer Field SVG */}
-      <Svg
-        width="100%"
-        height="100%"
-        viewBox="0 0 390 517"
-        style={[styles.fieldSvg, getFieldTransform()]}
-      >
-        <Defs>
-          <ClipPath id="clip0_6268_16454">
-            <Rect width="390" height="516.73" rx="30" fill="white"/>
-          </ClipPath>
-        </Defs>
-        <G clipPath="url(#clip0_6268_16454)">
-          {/* Background rect with rounded corners */}
-          <Rect width="390" height="516.73" rx="30" fill="#E6E8E5"/>
-          {/* Field outline - Centered */}
-          <Path
-            d="M25.0687 25.4404H364.661C370.982 25.4405 376.107 30.5652 376.107 36.8867V500.189H13.6224V36.8877C13.6224 30.5661 18.7472 25.4407 25.0687 25.4404Z"
-            stroke="#B3B3B3"
-            strokeWidth="1.63522"
-            fill="none"
-          />
-          {/* Left goal area */}
-          <Path
-            d="M35.6981 24.623V36.0696C35.6981 42.8429 30.2073 48.3337 23.434 48.3337H12.8051"
-            stroke="#B3B3B3"
-            strokeWidth="1.63522"
-            fill="none"
-          />
-          {/* Right goal area */}
-          <Path
-            d="M354.031 24.623V36.0696C354.031 42.8429 359.522 48.3337 366.296 48.3337H376.924"
-            stroke="#B3B3B3"
-            strokeWidth="1.63522"
-            fill="none"
-          />
-          {/* Center circle */}
-          <Circle cx="195" cy="495.78" r="69.9057" stroke="#B3B3B3" strokeWidth="1.63522" fill="none"/>
-          {/* Center spot */}
-          <Circle cx="194.591" cy="497.416" r="4.49686" fill="#B3B3B3" stroke="#B3B3B3" strokeWidth="1.63522"/>
-          {/* Penalty area */}
-          <Path
-            d="M286.705 25.4404V103.1133C286.705 109.435 281.579 114.561 275.257 114.561H103.559C97.238 114.56 92.1129 109.435 92.1129 103.1133V25.4404H286.705Z"
-            stroke="#B3B3B3"
-            strokeWidth="1.63522"
-            fill="none"
-          />
-          {/* Goal area */}
-          <Path
-            d="M241.735 25.4404V49.1514C241.735 53.2153 238.441 56.5098 234.377 56.5098H143.622C139.558 56.5096 136.264 53.2152 136.264 49.1514V25.4404H241.735Z"
-            stroke="#B3B3B3"
-            strokeWidth="1.63522"
-            fill="none"
-          />
-        </G>
-      </Svg>
+      <View style={[styles.fieldSvg, getFieldTransform()]}>
+        <SoccerFieldLayout
+          style={styles.fieldIcon}
+        />
+      </View>
 
       {/* Players positioned according to formation */}
       {formation.positions.map((position, index) => {
         const player = displayPlayers[index];
         if (!player) return null;
-
-        // Get the appropriate jersey image based on player's jersey type
-        const getJerseyImage = (jerseyType: string) => {
-          switch (jerseyType) {
-            case 'home':
-              return team.jerseys.home;
-            case 'away':
-              return team.jerseys.away;
-            case 'goalkeeper':
-              return team.jerseys.goalkeeper;
-            case 'third':
-              return team.jerseys.third || team.jerseys.home;
-            default:
-              return team.jerseys.home;
-          }
-        };
 
         // Get flipped position for away team
         const flippedPosition = getFlippedPosition(position);
@@ -177,9 +96,12 @@ export const FormationField: React.FC<FormationFieldProps> = ({
             <PlayerCard
               name={player.name}
               number={player.number}
-              jerseyImage={getJerseyImage(player.jerseyType)}
+              profileImage={player.profileImage}
+              position={player.position}
+              showPosition={false}
               teamColor={team.primaryColor}
               size="small"
+              variant="lineup"
             />
           </View>
         );
@@ -191,8 +113,10 @@ export const FormationField: React.FC<FormationFieldProps> = ({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    height: 517,
-    backgroundColor: '#E6E8E5',
+    // Height adjusted to better accommodate field aspect ratio (382:683)
+    // Original was 517, increased to show full field with padding
+    height: 700,
+    backgroundColor: '#0F9D58',
     borderRadius: 30,
     overflow: 'hidden',
     position: 'relative',
@@ -204,12 +128,31 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
   },
+  fieldIcon: {
+    width: '100%',
+    height: '100%',
+  },
   playerPosition: {
     position: 'absolute',
     transform: [{ translateX: -25 }, { translateY: -25 }], // Center the player card on the position
   },
+  formationLabelContainer: {
+    position: 'absolute',
+    left: 20,
+    zIndex: 10,
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  formationLabelTop: {
+    top: 15,
+  },
+  formationLabelBottom: {
+    bottom: 15,
+  },
   formationText: {
-    color: COLORS.white,
+    color: COLORS.black,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
     fontSize: TYPOGRAPHY.fontSize.sm,
   },

@@ -6,10 +6,11 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Animated, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { Animated, Dimensions, Image, ImageSourcePropType, ScrollView, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { COLORS, TYPOGRAPHY } from '../../../constants';
 import { BookmarkIcon, CommentIcon, HeartIcon, ShareIcon } from '../../icons';
 import { commentsData, friendsList } from '../../screens/HomePage/mockData';
+import { PlayerAvatar } from '../Player/PlayerAvatar';
 import { CommentsModal } from './CommentsModal';
 import { ShareModal } from './ShareModal';
 
@@ -20,9 +21,10 @@ interface SocialPostProps {
     avatar?: string;
     initials: string;
     avatarColor?: string;
+    profileImage?: any;
   };
   timeAgo: string;
-  images: string[];
+  images: ImageSourcePropType[];
   caption: string;
   hashtags: string;
   likes: string;
@@ -176,18 +178,12 @@ export const SocialPost: React.FC<SocialPostProps> = ({
       <View style={styles.userInfoContainer}>
         <View style={styles.userInfoContent}>
           {/* Avatar */}
-          {user.avatar ? (
-            <Image source={{ uri: user.avatar }} style={styles.avatar} />
-          ) : (
-            <View style={[
-              styles.avatarPlaceholder,
-              { backgroundColor: user.avatarColor || COLORS.gold }
-            ]}>
-              <Text style={styles.avatarText}>
-                {user.initials}
-              </Text>
-            </View>
-          )}
+          <PlayerAvatar
+            profileImage={user.profileImage}
+            size={40}
+            circularBackground={true}
+            backgroundColor={user.avatarColor || COLORS.gray400}
+          />
 
           {/* User Name and Time */}
           <View>
@@ -217,7 +213,7 @@ export const SocialPost: React.FC<SocialPostProps> = ({
             scrollEventThrottle={16}
             style={styles.imageScrollView}
           >
-            {images.map((imageUri, index) => (
+            {images.map((imageSource, index) => (
               <TouchableOpacity
                 key={index}
                 onPress={onPress}
@@ -225,7 +221,7 @@ export const SocialPost: React.FC<SocialPostProps> = ({
                 style={[styles.imageContainer, { width: imageWidth }]}
               >
                 <Image
-                  source={{ uri: imageUri }}
+                  source={imageSource}
                   style={[styles.image, { width: imageWidth }]}
                   resizeMode="cover"
                 />
@@ -336,6 +332,7 @@ export const SocialPost: React.FC<SocialPostProps> = ({
         currentUser={{
           initials: 'U',
           avatarColor: COLORS.gold,
+          profileImage: require('../../../assets/MockData/MatchPage/cole-palmer.png'),
         }}
         onSendComment={handleSendComment}
       />
@@ -375,23 +372,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  avatarPlaceholder: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: TYPOGRAPHY.fontSize.lg,
-    color: COLORS.white,
   },
   userName: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
@@ -456,7 +436,7 @@ const styles = StyleSheet.create({
   paginationDotActive: {
     width: 8,
     height: 8,
-    backgroundColor: COLORS.gold,
+    backgroundColor: COLORS.goldAccent,
   },
   paginationDotInactive: {
     width: 6,

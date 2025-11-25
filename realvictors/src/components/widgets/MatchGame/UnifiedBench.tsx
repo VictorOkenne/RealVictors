@@ -1,26 +1,27 @@
 /**
  * UnifiedBench Widget
- * 
- * Displays both teams' benches side by side with substitution indicators
- * Shows player position, name, number, and substitution status
- * Follows Figma design with side-by-side layout
+ *
+ * Displays both teams' benches in vertical columns
+ * Uses PlayerCard component for consistent player display
+ * Two columns side by side - one for each team
  */
 
 import React from 'react';
 import { Image, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { COLORS, TYPOGRAPHY } from '../../../constants';
 import { Player } from '../../screens/MatchPage/mockData';
+import { PlayerCard } from '../Player/PlayerCard';
 
 interface UnifiedBenchProps {
   homeTeam: {
     name: string;
-    logo: string;
+    logo: any;
     bench: Player[];
     primaryColor: string;
   };
   awayTeam: {
     name: string;
-    logo: string;
+    logo: any;
     bench: Player[];
     primaryColor: string;
   };
@@ -33,36 +34,31 @@ export const UnifiedBench: React.FC<UnifiedBenchProps> = ({
   style,
 }) => {
 
+  // Render a single player card using PlayerCard component
+  const renderPlayerCard = (player: Player) => (
+    <PlayerCard
+      key={player.id}
+      name={player.name}
+      number={player.number}
+      profileImage={player.profileImage}
+      position={player.position}
+      showPosition={true}
+      size="medium"
+    />
+  );
+
   // Render a single team's bench
-  const renderTeamBench = (team: typeof homeTeam, isHome: boolean) => (
+  const renderTeamBench = (team: typeof homeTeam) => (
     <View style={styles.teamColumn}>
       {/* Team Header */}
       <View style={styles.teamHeader}>
-        <Image source={{ uri: team.logo }} style={styles.teamLogo} />
-        <View style={styles.teamHeaderInfo}>
-          <View style={[styles.teamColorBar, { backgroundColor: team.primaryColor }]} />
-          <Text style={styles.teamName}>{team.name}</Text>
-        </View>
+        <Image source={team.logo} style={styles.teamLogo} />
+        <Text style={styles.teamName} numberOfLines={1}>{team.name}</Text>
       </View>
 
-      {/* Bench Players */}
+      {/* Bench Players - Vertical List */}
       <View style={styles.playersList}>
-        {team.bench.map((player, index) => (
-          <View key={player.id} style={styles.playerRow}>
-            {/* Player Info */}
-            <View style={styles.playerInfo}>
-              <View style={[styles.positionBadge, { backgroundColor: team.primaryColor }]}>
-                <Text style={styles.positionText}>{player.position}</Text>
-              </View>
-              <View style={styles.playerDetails}>
-                <Text style={styles.playerName} numberOfLines={1}>
-                  {player.name}
-                </Text>
-                <Text style={styles.playerNumber}>#{player.number}</Text>
-              </View>
-            </View>
-          </View>
-        ))}
+        {team.bench.map((player) => renderPlayerCard(player))}
       </View>
     </View>
   );
@@ -70,18 +66,16 @@ export const UnifiedBench: React.FC<UnifiedBenchProps> = ({
   return (
     <View style={[styles.container, style]}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Bench</Text>
-      </View>
+      <Text style={styles.title}>Substitutes</Text>
 
       {/* Teams Side by Side */}
       <View style={styles.teamsContainer}>
-        {renderTeamBench(homeTeam, true)}
-        
+        {renderTeamBench(homeTeam)}
+
         {/* Divider */}
         <View style={styles.divider} />
-        
-        {renderTeamBench(awayTeam, false)}
+
+        {renderTeamBench(awayTeam)}
       </View>
     </View>
   );
@@ -90,113 +84,58 @@ export const UnifiedBench: React.FC<UnifiedBenchProps> = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: 16,
+    padding: 16,
     marginVertical: 8,
-    marginHorizontal: 8,
+    marginHorizontal: 16,
     shadowColor: COLORS.black,
     shadowOffset: {
       width: 0,
-      height: 1,
+      height: 2,
     },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: COLORS.gray100,
-  },
-  header: {
-    marginBottom: 12,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   title: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: TYPOGRAPHY.fontSize.base,
     color: COLORS.black,
     textAlign: 'center',
+    marginBottom: 16,
   },
   teamsContainer: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 16,
   },
   teamColumn: {
     flex: 1,
-    minWidth: 140,
   },
   teamHeader: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.gray200,
     gap: 6,
   },
   teamLogo: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-  },
-  teamHeaderInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: 6,
-  },
-  teamColorBar: {
-    width: 3,
-    height: 16,
-    borderRadius: 2,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
   teamName: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: TYPOGRAPHY.fontSize.sm,
+    fontSize: 11,
     color: COLORS.black,
-    flex: 1,
+    textAlign: 'center',
   },
   playersList: {
-    gap: 6,
-  },
-  playerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    backgroundColor: COLORS.gray50,
-    borderRadius: 6,
-    minHeight: 40,
-  },
-  playerInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: 6,
-  },
-  positionBadge: {
-    width: 24,
-    height: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  positionText: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 9,
-    color: COLORS.white,
-  },
-  playerDetails: {
-    flex: 1,
-  },
-  playerName: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    fontSize: TYPOGRAPHY.fontSize.xs,
-    color: COLORS.black,
-    marginBottom: 1,
-  },
-  playerNumber: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    fontSize: 10,
-    color: COLORS.gray600,
+    gap: 12,
   },
   divider: {
     width: 1,
-    backgroundColor: COLORS.gray200,
-    marginVertical: 8,
+    backgroundColor: COLORS.gray300,
   },
 });

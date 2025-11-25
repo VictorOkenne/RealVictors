@@ -9,12 +9,14 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { COLORS, TYPOGRAPHY } from '../../../constants';
 import { HeartIcon } from '../../icons';
+import { PlayerAvatar } from '../Player/PlayerAvatar';
 
 interface CommentProps {
   user: {
     name: string;
     initials: string;
     avatarColor: string;
+    profileImage?: any;
   };
   timeAgo: string;
   text: string;
@@ -56,11 +58,12 @@ export const Comment: React.FC<CommentProps> = ({
   return (
     <View style={[styles.container, style]}>
       {/* User Avatar */}
-      <View style={[styles.avatar, { backgroundColor: user.avatarColor }]}>
-        <Text style={styles.avatarText}>
-          {user.initials}
-        </Text>
-      </View>
+      <PlayerAvatar
+        profileImage={user.profileImage}
+        size={36}
+        circularBackground={true}
+        backgroundColor={user.avatarColor}
+      />
 
       {/* Comment Content */}
       <View style={styles.content}>
@@ -129,18 +132,6 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 12,
     paddingHorizontal: 20,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 16,
-    color: COLORS.white,
   },
   content: {
     flex: 1,

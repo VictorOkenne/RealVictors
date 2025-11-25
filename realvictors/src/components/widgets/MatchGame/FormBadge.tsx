@@ -27,7 +27,7 @@ export const FormBadge: React.FC<FormBadgeProps> = ({
       case 'W':
         return '#F8C300'; // Win = Gold
       case 'L':
-        return COLORS.white; // Loss = White
+        return COLORS.black; // Loss = Black
       case 'D':
         return 'rgba(174, 174, 174, 0.72)'; // Draw = Gray
       default:
@@ -40,7 +40,7 @@ export const FormBadge: React.FC<FormBadgeProps> = ({
       case 'W':
         return COLORS.black;
       case 'L':
-        return COLORS.black;
+        return COLORS.white; // Loss = White text
       case 'D':
         return COLORS.white;
       default:
@@ -57,6 +57,11 @@ export const FormBadge: React.FC<FormBadgeProps> = ({
           width: size,
           height: size,
           borderRadius: size / 2,
+          // Add white border for loss badges
+          ...(result === 'L' && {
+            borderWidth: 1,
+            borderColor: COLORS.white,
+          }),
         },
         style,
       ]}

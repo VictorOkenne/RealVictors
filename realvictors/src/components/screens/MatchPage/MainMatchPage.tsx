@@ -23,15 +23,21 @@ import {
     MatchTab,
     MatchTabNavigation,
 } from '../../widgets';
+import { HistoryView } from './HistoryView';
 import { LineupView } from './LineupView';
-import { formations, mockMatchData } from './mockData';
+import { basketballFormations, formations, mockBasketballMatchData, mockMatchData, mockUpcomingSoccerMatch, mockUpcomingBasketballMatch } from './mockData';
 import { OverviewView } from './OverviewView';
-import { RecapView } from './RecapView';
+import { PreviewView } from './PreviewView';
+import { SquadView } from './SquadView';
 import { StatsView } from './StatsView';
-import { TeamStatsView } from './TeamStatsView';
+import { StatsViewV2 } from './StatsViewV2';
+import { TimelineView } from './TimelineView';
 
 interface MainMatchPageProps {
   onBackPress?: () => void;
+  useSoccer?: boolean; // Toggle between soccer and basketball for testing
+  matchStatus?: 'upcoming' | 'live' | 'finished'; // Override match status (optional backup)
+  useUpcoming?: boolean; // Toggle to test upcoming match view
 }
 
 const HEADER_MAX_HEIGHT = 340; // Height of match header card
@@ -41,18 +47,65 @@ const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-export const MainMatchPage: React.FC<MainMatchPageProps> = ({ onBackPress }) => {
-  const [activeTab, setActiveTab] = useState<MatchTab>('lineups');
+export const MainMatchPage: React.FC<MainMatchPageProps> = ({
+  onBackPress,
+  useSoccer = true, // Default to soccer, set to false for basketball
+  matchStatus,
+  useUpcoming = false, // Set to true to test upcoming match view
+}) => {
+  // Toggle between old (v1) and new (v2) stats view
+  const useNewStatsView = true;
+
+  // Select match data based on sport and status
+  let matchData;
+  if (useUpcoming) {
+    matchData = useSoccer ? mockUpcomingSoccerMatch : mockUpcomingBasketballMatch;
+  } else {
+    matchData = useSoccer ? mockMatchData : mockBasketballMatchData;
+  }
+
+  const isSoccer = matchData.sport === 'soccer';
+  const isBasketball = matchData.sport === 'basketball';
+
+  // Determine match status (use matchData.status as primary, matchStatus prop as backup)
+  const currentMatchStatus = matchData.status || matchStatus || 'finished';
+  const isUpcoming = currentMatchStatus === 'upcoming';
+
+  // Define tabs based on match status
+  const upcomingTabs: { id: MatchTab; label: string }[] = [
+    { id: 'preview', label: 'Preview' },
+    { id: 'lineup', label: 'Lineup' },
+    { id: 'squadComparison', label: 'Squad' },
+    { id: 'history', label: 'History' },
+  ];
+
+  const finishedTabs: { id: MatchTab; label: string }[] = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'lineup', label: 'Lineup' },
+    { id: 'timeline', label: 'Timeline' },
+    { id: 'stats', label: 'Stats' },
+    { id: 'preview', label: 'Preview' },
+    { id: 'history', label: 'History' },
+  ];
+
+  const tabs = isUpcoming ? upcomingTabs : finishedTabs;
+  const defaultTab: MatchTab = isUpcoming ? 'preview' : 'overview';
+
+  const [activeTab, setActiveTab] = useState<MatchTab>(defaultTab);
   const [isTabSticky, setIsTabSticky] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
   const insets = useSafeAreaInsets(); // Get safe area insets
 
-  // Get formations for both teams
-  const homeFormation = formations[mockMatchData.homeTeam.formation];
-  const awayFormation = formations[mockMatchData.awayTeam.formation];
+  // Get formations for both teams (conditional based on sport)
+  const homeFormation = isSoccer
+    ? formations[matchData.homeTeam.formation as keyof typeof formations]
+    : basketballFormations[matchData.homeTeam.formation as keyof typeof basketballFormations];
+  const awayFormation = isSoccer
+    ? formations[matchData.awayTeam.formation as keyof typeof formations]
+    : basketballFormations[matchData.awayTeam.formation as keyof typeof basketballFormations];
 
-  // Tab order for swipe navigation
-  const tabOrder: MatchTab[] = ['lineups', 'overview', 'stats', 'recap', 'teamStats'];
+  // Tab order for swipe navigation (dynamic based on match status)
+  const tabOrder: MatchTab[] = tabs.map(t => t.id);
   
   // Handle tab change with swipe
   const handleSwipe = (direction: 'left' | 'right') => {
@@ -124,30 +177,32 @@ export const MainMatchPage: React.FC<MainMatchPageProps> = ({ onBackPress }) => 
   // Render content based on active tab
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'lineups':
+      case 'preview':
+        return <PreviewView matchData={matchData} />;
+      case 'lineup':
         return (
           <LineupView
-            homeTeam={mockMatchData.homeTeam}
-            awayTeam={mockMatchData.awayTeam}
-            homeSubstitutions={mockMatchData.homeSubstitutions}
-            awaySubstitutions={mockMatchData.awaySubstitutions}
+            sport={matchData.sport}
+            homeTeam={matchData.homeTeam}
+            awayTeam={matchData.awayTeam}
+            homeSubstitutions={matchData.homeSubstitutions}
+            awaySubstitutions={matchData.awaySubstitutions}
+            lineupStatus={matchData.lineupStatus}
+            matchStatus={currentMatchStatus}
           />
         );
+      case 'squadComparison':
+        return <SquadView matchData={matchData} />;
+      case 'history':
+        return <HistoryView matchData={matchData} />;
       case 'overview':
-        return <OverviewView matchData={mockMatchData} />;
+        return <OverviewView matchData={matchData} />;
+      case 'timeline':
+        return <TimelineView matchData={matchData} />;
       case 'stats':
-        return <StatsView />;
-      case 'recap':
-        return <RecapView />;
-      case 'teamStats':
-        return <TeamStatsView />;
+        return useNewStatsView ? <StatsViewV2 matchData={matchData} /> : <StatsView matchData={matchData} />;
       default:
-        return <LineupView
-          homeTeam={mockMatchData.homeTeam}
-          awayTeam={mockMatchData.awayTeam}
-          homeSubstitutions={mockMatchData.homeSubstitutions}
-          awaySubstitutions={mockMatchData.awaySubstitutions}
-        />;
+        return isUpcoming ? <PreviewView matchData={matchData} /> : <OverviewView matchData={matchData} />;
     }
   };
 
@@ -183,21 +238,23 @@ export const MainMatchPage: React.FC<MainMatchPageProps> = ({ onBackPress }) => 
           pointerEvents="box-none"
         >
           <MatchHeaderCard
-            leagueName={mockMatchData.leagueName}
+            leagueName={matchData.leagueName}
             homeTeam={{
-              name: mockMatchData.homeTeam.shortName,
-              logo: mockMatchData.homeTeam.logo,
+              name: matchData.homeTeam.shortName,
+              logo: matchData.homeTeam.logo,
             }}
             awayTeam={{
-              name: mockMatchData.awayTeam.shortName,
-              logo: mockMatchData.awayTeam.logo,
+              name: matchData.awayTeam.shortName,
+              logo: matchData.awayTeam.logo,
             }}
-            homeScore={mockMatchData.homeScore}
-            awayScore={mockMatchData.awayScore}
-            date={mockMatchData.date}
-            location={mockMatchData.location}
-            homeForm={mockMatchData.homeForm}
-            awayForm={mockMatchData.awayForm}
+            homeScore={matchData.homeScore}
+            awayScore={matchData.awayScore}
+            date={matchData.date}
+            location={matchData.location}
+            homeForm={matchData.homeForm}
+            awayForm={matchData.awayForm}
+            matchTime={matchData.matchTime}
+            isUpcoming={isUpcoming}
             onBackPress={onBackPress}
             onSharePress={() => console.log('Share pressed')}
           />
@@ -211,6 +268,7 @@ export const MainMatchPage: React.FC<MainMatchPageProps> = ({ onBackPress }) => 
             <MatchTabNavigation
               activeTab={activeTab}
               onTabChange={setActiveTab}
+              tabs={tabs}
             />
           </View>
         </SafeAreaView>
@@ -236,6 +294,7 @@ export const MainMatchPage: React.FC<MainMatchPageProps> = ({ onBackPress }) => 
             <MatchTabNavigation
               activeTab={activeTab}
               onTabChange={setActiveTab}
+              tabs={tabs}
             />
           </View>
         ) : (
@@ -316,8 +375,8 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
     paddingTop: 30,
     paddingHorizontal: 20,
-    minHeight: SCREEN_HEIGHT, // Extend to full screen height
-    paddingBottom: 100, // Extra padding at bottom
+    minHeight: SCREEN_HEIGHT + HEADER_MAX_HEIGHT - TAB_NAV_HEIGHT, // Minimum height to cover viewport
+    paddingBottom: 10,
   },
   bottomIndicator: {
     position: 'absolute',
@@ -332,3 +391,4 @@ const styles = StyleSheet.create({
 });
 
 export default MainMatchPage;
+

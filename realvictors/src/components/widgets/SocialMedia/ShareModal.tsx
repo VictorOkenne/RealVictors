@@ -11,36 +11,38 @@
 
 import React, { useState } from 'react';
 import {
-  Dimensions,
-  FlatList,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    FlatList,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { COLORS, TYPOGRAPHY } from '../../../constants';
 import {
-  EmailIcon,
-  FacebookIcon,
-  InstagramIcon,
-  LinkIcon,
-  SearchIcon,
-  SMSIcon,
-  SnapchatIcon,
-  WhatsAppIcon,
-  XIcon,
+    EmailIcon,
+    FacebookIcon,
+    InstagramIcon,
+    LinkIcon,
+    SearchIcon,
+    SMSIcon,
+    SnapchatIcon,
+    WhatsAppIcon,
+    XIcon,
 } from '../../icons';
+import { PlayerAvatar } from '../Player/PlayerAvatar';
 
 interface Friend {
   id: string;
   username: string;
   initials: string;
   avatarColor: string;
+  profileImage?: any;
 }
 
 interface ShareModalProps {
@@ -185,14 +187,12 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                       style={styles.friendItem}
                       onPress={() => handleShareWithFriend(friend.id)}
                     >
-                      <View
-                        style={[
-                          styles.friendAvatar,
-                          { backgroundColor: friend.avatarColor },
-                        ]}
-                      >
-                        <Text style={styles.friendInitials}>{friend.initials}</Text>
-                      </View>
+                      <PlayerAvatar
+                        profileImage={friend.profileImage}
+                        size={60}
+                        circularBackground={true}
+                        backgroundColor={friend.avatarColor}
+                      />
                       <Text style={styles.friendUsername} numberOfLines={1}>
                         {friend.username}
                       </Text>
@@ -300,18 +300,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     width: '21.5%',
-  },
-  friendAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  friendInitials: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: TYPOGRAPHY.fontSize['2xl'],
-    color: COLORS.white,
   },
   friendUsername: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
