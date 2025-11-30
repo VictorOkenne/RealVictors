@@ -263,8 +263,12 @@ export const MainSearchPage: React.FC<MainSearchPageProps> = () => {
   };
 
   const handleTeamPress = (id: string) => {
-    console.log('Team pressed:', id);
-    // Navigate to team page
+    // Find the team to get its sport
+    const team = mockTeams.find(t => t.id === id);
+    if (team) {
+      router.push(`/team-profile?id=${id}&sport=${team.sport}`);
+    }
+    console.log('Team pressed:', id, 'sport:', team?.sport);
   };
 
   const handleLeaguePress = (id: string) => {

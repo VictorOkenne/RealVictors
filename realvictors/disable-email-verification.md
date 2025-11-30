@@ -4,7 +4,7 @@
 
 1. **Go to your Supabase Dashboard:**
    - Visit: https://supabase.com/dashboard
-   - Click on "VictorOkenne's Project"
+   - Click on "Real Victors"
 
 2. **Navigate to Authentication Settings:**
    - In the left sidebar, click "Authentication"

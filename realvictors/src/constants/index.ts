@@ -236,9 +236,9 @@ export const TYPOGRAPHY = {
     extrabold: 'Montserrat_800ExtraBold',
     black: 'Montserrat_900Black',
     // Custom fonts for specific components
-    satoshi: 'System', // Fallback to system font until Satoshi is added
-    satoshiMedium: 'System', // Use system font as fallback
-    satoshiBold: 'System', // Use system font as fallback
+    satoshi: 'Satoshi-Medium', 
+    satoshiMedium: 'Satoshi-Medium', 
+    satoshiBold: 'Satoshi-Bold',
     orbitron: 'Orbitron_400Regular',
     orbitronMedium: 'Orbitron_500Medium',
     orbitronBold: 'Orbitron_700Bold',

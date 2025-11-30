@@ -68,7 +68,7 @@ export const MainHomePage: React.FC<MainHomePageProps> = () => {
           notificationCount={3}
           messageCount={4}
           onSearchPress={() => router.push('/search')}
-          onNotificationPress={() => console.log('Notifications pressed')}
+          onNotificationPress={() => router.push('/notifications')}
           onMessagePress={() => router.push('/(tabs)/messages')}
         />
       </SafeAreaView>

@@ -65,9 +65,8 @@ export default function RootLayout() {
     Orbitron_400Regular,
     Orbitron_500Medium,
     Orbitron_700Bold,
-    // Satoshi fonts would go here when added manually
-    // 'Satoshi-Medium': require('../assets/fonts/Satoshi-Medium.otf'),
-    // 'Satoshi-Bold': require('../assets/fonts/Satoshi-Bold.otf'),
+    'Satoshi-Medium': require('../assets/fonts/Satoshi/Satoshi-Medium.otf'),
+    'Satoshi-Bold': require('../assets/fonts/Satoshi/Satoshi-Bold.otf'),
   });
 
   // Show loading state while fonts are loading
@@ -110,6 +109,15 @@ export default function RootLayout() {
                 />
                 <Stack.Screen
                   name="highlight-list"
+                  options={{
+                    headerShown: false,
+                    presentation: 'card',
+                    animation: 'slide_from_right',
+                  }}
+                />
+                {/* Notifications screen - full screen with custom header */}
+                <Stack.Screen
+                  name="notifications"
                   options={{
                     headerShown: false,
                     presentation: 'card',

@@ -32,6 +32,8 @@ interface MatchHeaderCardProps {
   isUpcoming?: boolean; // Flag to indicate if this is an upcoming match
   onBackPress?: () => void;
   onSharePress?: () => void;
+  onHomeTeamPress?: () => void; // Callback when home team is pressed
+  onAwayTeamPress?: () => void; // Callback when away team is pressed
   style?: ViewStyle;
 }
 
@@ -49,6 +51,8 @@ export const MatchHeaderCard: React.FC<MatchHeaderCardProps> = ({
   isUpcoming = false,
   onBackPress,
   onSharePress,
+  onHomeTeamPress,
+  onAwayTeamPress,
   style,
 }) => {
   return (
@@ -78,12 +82,17 @@ export const MatchHeaderCard: React.FC<MatchHeaderCardProps> = ({
       {/* Teams Row with Score in the Middle */}
       <View style={styles.teamsContainer}>
         {/* Home Team */}
-        <View style={styles.teamSection}>
+        <TouchableOpacity
+          style={styles.teamSection}
+          onPress={onHomeTeamPress}
+          activeOpacity={onHomeTeamPress ? 0.7 : 1}
+          disabled={!onHomeTeamPress}
+        >
           <Image source={homeTeam.logo} style={styles.teamLogo} />
           <Text style={styles.teamName} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
             {homeTeam.name}
           </Text>
-        </View>
+        </TouchableOpacity>
 
         {/* Score or Time in the Middle */}
         <View style={styles.scoreContainer}>
@@ -101,12 +110,17 @@ export const MatchHeaderCard: React.FC<MatchHeaderCardProps> = ({
         </View>
 
         {/* Away Team */}
-        <View style={styles.teamSection}>
+        <TouchableOpacity
+          style={styles.teamSection}
+          onPress={onAwayTeamPress}
+          activeOpacity={onAwayTeamPress ? 0.7 : 1}
+          disabled={!onAwayTeamPress}
+        >
           <Image source={awayTeam.logo} style={styles.teamLogo} />
           <Text style={styles.teamName} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
             {awayTeam.name}
           </Text>
-        </View>
+        </TouchableOpacity>
       </View>
 
       {/* Location Row */}

@@ -31,6 +31,8 @@ interface GameCardProps {
   matchStage?: string; // e.g., "Group H", "Knockout", "Match day 3", "Week 5"
   leagueLogo?: string | ImageSourcePropType;
   onPress?: () => void;
+  onHomeTeamPress?: () => void; // Callback when home team is pressed
+  onAwayTeamPress?: () => void; // Callback when away team is pressed
   style?: ViewStyle;
   // Optional score for previous games
   score?: {
@@ -53,6 +55,8 @@ export const GameCard: React.FC<GameCardProps> = ({
   matchStage,
   leagueLogo,
   onPress,
+  onHomeTeamPress,
+  onAwayTeamPress,
   style,
   score,
   enableSwipe = false, // Default to disabled
@@ -165,7 +169,17 @@ export const GameCard: React.FC<GameCardProps> = ({
               {/* Teams and Time Section */}
               <View style={styles.teamsSection}>
                 {/* Home Team */}
-                <View style={styles.teamContainer}>
+                <TouchableOpacity
+                  style={styles.teamContainer}
+                  onPress={(e) => {
+                    if (onHomeTeamPress) {
+                      e.stopPropagation();
+                      onHomeTeamPress();
+                    }
+                  }}
+                  activeOpacity={onHomeTeamPress ? 0.7 : 1}
+                  disabled={!onHomeTeamPress}
+                >
                   <View style={styles.teamBadgeContainer}>
                     <Image
                       source={typeof homeTeam.logo === 'string' ? { uri: homeTeam.logo } : homeTeam.logo}
@@ -174,7 +188,7 @@ export const GameCard: React.FC<GameCardProps> = ({
                     />
                   </View>
                   <Text style={styles.teamLabel}>HOME</Text>
-                </View>
+                </TouchableOpacity>
 
                 {/* Time/Score Section */}
                 <View style={styles.timeSection}>
@@ -191,7 +205,17 @@ export const GameCard: React.FC<GameCardProps> = ({
                 </View>
 
                 {/* Away Team */}
-                <View style={styles.teamContainer}>
+                <TouchableOpacity
+                  style={styles.teamContainer}
+                  onPress={(e) => {
+                    if (onAwayTeamPress) {
+                      e.stopPropagation();
+                      onAwayTeamPress();
+                    }
+                  }}
+                  activeOpacity={onAwayTeamPress ? 0.7 : 1}
+                  disabled={!onAwayTeamPress}
+                >
                   <View style={styles.teamBadgeContainer}>
                     <Image
                       source={typeof awayTeam.logo === 'string' ? { uri: awayTeam.logo } : awayTeam.logo}
@@ -200,7 +224,7 @@ export const GameCard: React.FC<GameCardProps> = ({
                     />
                   </View>
                   <Text style={styles.teamLabel}>AWAY</Text>
-                </View>
+                </TouchableOpacity>
               </View>
 
               {/* Bottom Section - Location and Match Stage */}
