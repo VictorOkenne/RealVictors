@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { MainNotificationsPage } from '../src/components/screens/NotificationsPage/MainNotificationsPage';
+import { MainNotificationsPage } from '@/components/screens/NotificationsPage/MainNotificationsPage';
 
 export default function NotificationsRoute() {
   return <MainNotificationsPage />;

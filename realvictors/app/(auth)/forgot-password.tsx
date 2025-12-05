@@ -12,9 +12,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import { ArrowLeft, Mail } from 'lucide-react-native';
-import { AuthController } from '../../src/controllers/AuthController';
-import { Button, Input } from '../../src/components/ui';
-import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS } from '../../src/constants';
+import { AuthController } from '@/controllers/AuthController';
+import { Button, Input } from '@/components/ui';
+import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS } from '@/constants';
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');

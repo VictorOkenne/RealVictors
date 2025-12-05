@@ -6,7 +6,7 @@
 
 import { Stack } from 'expo-router';
 import React from 'react';
-import FollowersListPage from '../src/components/screens/UserProfilePage/FollowersListPage';
+import FollowersListPage from '@/components/screens/UserProfilePage/FollowersListPage';
 
 export default function FollowersListRoute() {
   return (

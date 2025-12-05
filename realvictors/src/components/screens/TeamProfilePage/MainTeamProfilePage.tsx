@@ -52,7 +52,7 @@ interface MainTeamProfilePageProps {
   onBackPress?: () => void;
 }
 
-const HEADER_MAX_HEIGHT = 340; // Height of team profile top section + actions
+const HEADER_MAX_HEIGHT = 465; // Height of team profile top section
 const TOP_HEADER_HEIGHT = 60; // Height of top header (back button, team name, share)
 const TAB_NAV_HEIGHT = 30; // Height of tab navigation
 const HEADER_MIN_HEIGHT = 0; // Header completely hidden
@@ -159,10 +159,6 @@ export const MainTeamProfilePage: React.FC<MainTeamProfilePageProps> = ({
     console.log('Followers pressed');
   };
 
-  const handleFollowingPress = () => {
-    console.log('Following pressed');
-  };
-
   // Render content based on active tab
   const renderTabContent = () => {
     switch (activeTab) {
@@ -181,7 +177,7 @@ export const MainTeamProfilePage: React.FC<MainTeamProfilePageProps> = ({
           />
         );
       case 'competitions':
-        return <CompetitionsView sport={sport} />;
+        return <CompetitionsView sport={sport} teamShortName={teamProfile.shortName} />;
       case 'stats':
         return (
           <StatsView
@@ -235,25 +231,15 @@ export const MainTeamProfilePage: React.FC<MainTeamProfilePageProps> = ({
             shortName={teamProfile.shortName}
             isVerified={teamProfile.isVerified}
             nationality={teamProfile.nationality}
-            league={teamProfile.league}
+            leagues={teamProfile.leagues}
             sport={teamProfile.sport}
+            teamPhoto={teamProfile.teamPhoto}
+            squadCount={teamProfile.squadCount}
             followers={teamProfile.stats.followers}
-            following={teamProfile.stats.following}
+            isFollowing={isFollowing}
             onFollowersPress={handleFollowersPress}
-            onFollowingPress={handleFollowingPress}
+            onFollowPress={handleFollowToggle}
           />
-
-          {/* Action Buttons */}
-          <View style={styles.actionsContainer}>
-            <TouchableOpacity
-              style={[styles.followButton, isFollowing && styles.unfollowButton]}
-              onPress={handleFollowToggle}
-            >
-              <Text style={[styles.followButtonText, isFollowing && styles.unfollowButtonText]}>
-                {isFollowing ? 'Following' : 'Follow'}
-              </Text>
-            </TouchableOpacity>
-          </View>
         </Animated.View>
       </SafeAreaView>
 
@@ -346,31 +332,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: 0,
-  },
-  actionsContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: COLORS.black,
-  },
-  followButton: {
-    backgroundColor: COLORS.gold,
-    paddingVertical: 12,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  unfollowButton: {
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.gray300,
-  },
-  followButtonText: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 15,
-    color: COLORS.white,
-  },
-  unfollowButtonText: {
-    color: COLORS.black,
   },
   tabContentContainer: {
     backgroundColor: COLORS.white,

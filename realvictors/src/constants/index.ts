@@ -187,7 +187,7 @@ export const COLORS = {
   goldLight: '#F5E6A8',
   goldAccent: '#FFC245',
   goldAccentLight: '#FFD78E',
-  
+
   // Sport colors (from SPORTS config)
   basketball: '#FF6B35',
   basketballLight: '#FFE5DC',
@@ -201,13 +201,13 @@ export const COLORS = {
   tennisLight: '#F3E5F5',
   baseball: '#795548',
   baseballLight: '#EFEBE9',
-  
+
   // Semantic colors
   success: '#4CAF50',
   warning: '#FF9800',
   error: '#F44336',
   info: '#2196F3',
-  
+
   // Neutral colors
   gray50: '#FAFAFA',
   gray100: '#F5F5F5',
@@ -224,6 +224,11 @@ export const COLORS = {
 
   // Text colors
   textSecondary: '#C4C3C3',
+
+  // Form/Result colors (for W/L/D badges - used app-wide for consistency)
+  formWin: '#F8C300', // Gold
+  formLoss: '#000000', // Black
+  formDraw: 'rgba(174, 174, 174, 0.72)', // Gray
 } as const;
 
 // Typography

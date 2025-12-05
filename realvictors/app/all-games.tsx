@@ -8,7 +8,7 @@
 
 import { useRouter } from 'expo-router';
 import { StyleSheet } from 'react-native';
-import { MainAllGamesPage } from '../src/components/screens/AllGamespage';
+import { MainAllGamesPage } from '@/components/screens/AllGamespage';
 
 export default function AllGamesScreen() {
   const router = useRouter();

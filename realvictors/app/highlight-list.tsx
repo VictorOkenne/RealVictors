@@ -7,7 +7,7 @@
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
-import { HighlightListView } from '../src/components/screens/UserProfilePage';
+import { HighlightListView } from '@/components/screens/UserProfilePage';
 
 export default function HighlightListScreen() {
   const router = useRouter();

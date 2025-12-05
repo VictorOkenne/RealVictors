@@ -9,6 +9,7 @@
 // Import formation types and data from constants
 import type { FormationType, FormationLayout, PlayerPosition } from '../../../constants/positions';
 import { SOCCER_FORMATIONS } from '../../../constants/positions';
+import type { PerformerStatsData } from '../../widgets/AppWide/PerformerStatsCard';
 
 /**
  * Sport Type
@@ -634,17 +635,10 @@ export const basketballFormations: Record<BasketballFormationType, BasketballFor
 /**
  * Top Performer Data Interface
  * Used for the Recap page top performers carousel
+ * Re-export from AppWide for backward compatibility
  */
-export interface TopPerformerData {
-  id: string;
-  name: string;
-  firstName: string;
-  lastName: string;
-  goals: number;
-  assists: number;
-  points: number;
-  image?: any;
-}
+export type { PerformerStatsData };
+export type TopPerformerData = PerformerStatsData;
 
 /**
  * Head to Head Stats Interfaces

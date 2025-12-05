@@ -25,11 +25,11 @@ export const FormBadge: React.FC<FormBadgeProps> = ({
   const getBackgroundColor = () => {
     switch (result) {
       case 'W':
-        return '#F8C300'; // Win = Gold
+        return COLORS.formWin; // Win = Gold
       case 'L':
-        return COLORS.black; // Loss = Black
+        return COLORS.formLoss; // Loss = Black
       case 'D':
-        return 'rgba(174, 174, 174, 0.72)'; // Draw = Gray
+        return COLORS.formDraw; // Draw = Gray
       default:
         return COLORS.gray300;
     }

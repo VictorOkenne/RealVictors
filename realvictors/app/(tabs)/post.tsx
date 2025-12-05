@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useAppTheme } from '../../src/utils/theme';
+import { useAppTheme } from '@/utils/theme';
 
 export default function CreateScreen() {
   const { colors } = useAppTheme();

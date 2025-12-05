@@ -28,16 +28,18 @@ interface TeamProfileTopSectionProps {
   shortName: string;
   isVerified: boolean;
   nationality: Nationality;
-  league: League;
+  leagues: League[]; // Changed to support multiple leagues
   sport: 'soccer' | 'basketball';
+  teamPhoto?: ImageSourcePropType;
+  squadCount?: number; // Number of players on the team
 
   // Social stats
   followers: string;
-  following: string;
+  isFollowing?: boolean;
 
   // Callbacks for social stats
   onFollowersPress?: () => void;
-  onFollowingPress?: () => void;
+  onFollowPress?: () => void;
 }
 
 export const TeamProfileTopSection: React.FC<TeamProfileTopSectionProps> = ({
@@ -47,15 +49,17 @@ export const TeamProfileTopSection: React.FC<TeamProfileTopSectionProps> = ({
   shortName,
   isVerified,
   nationality,
-  league,
+  leagues,
   sport,
+  teamPhoto,
+  squadCount,
 
   // Social stats
   followers,
-  following,
+  isFollowing,
 
   onFollowersPress,
-  onFollowingPress,
+  onFollowPress,
 }) => {
   return (
     <View style={styles.container}>
@@ -66,32 +70,15 @@ export const TeamProfileTopSection: React.FC<TeamProfileTopSectionProps> = ({
         shortName={shortName}
         isVerified={isVerified}
         nationality={nationality}
-        league={league}
+        leagues={leagues}
         sport={sport}
+        teamPhoto={teamPhoto}
+        squadCount={squadCount}
+        followers={followers}
+        isFollowing={isFollowing}
+        onFollowersPress={onFollowersPress}
+        onFollowPress={onFollowPress}
       />
-
-      {/* Social Stats Bar */}
-      <View style={styles.socialStatsBar}>
-        <TouchableOpacity
-          style={styles.statItem}
-          onPress={onFollowersPress}
-          activeOpacity={onFollowersPress ? 0.7 : 1}
-        >
-          <Text style={styles.statValue}>{followers}</Text>
-          <Text style={styles.statLabel}>Followers</Text>
-        </TouchableOpacity>
-
-        <View style={styles.dividerVertical} />
-
-        <TouchableOpacity
-          style={styles.statItem}
-          onPress={onFollowingPress}
-          activeOpacity={onFollowingPress ? 0.7 : 1}
-        >
-          <Text style={styles.statValue}>{following}</Text>
-          <Text style={styles.statLabel}>Following</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
@@ -99,34 +86,6 @@ export const TeamProfileTopSection: React.FC<TeamProfileTopSectionProps> = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: COLORS.black,
-  },
-  socialStatsBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    backgroundColor: COLORS.black,
-  },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 4,
-  },
-  statValue: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 18,
-    color: COLORS.white,
-  },
-  statLabel: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    fontSize: 12,
-    color: COLORS.gray400,
-  },
-  dividerVertical: {
-    width: 1,
-    height: 40,
-    backgroundColor: COLORS.gray700,
   },
 });
 

@@ -1,9 +1,9 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
-import { MainOnboardingPage } from '../../src/components/screens/AuthScreens/Onboarding';
-import { useAuth } from '../../src/contexts/AuthContext';
-import { AuthController } from '../../src/controllers/AuthController';
+import { MainOnboardingPage } from '@/components/screens/AuthScreens/Onboarding';
+import { useAuth } from '@/contexts/AuthContext';
+import { AuthController } from '@/controllers/AuthController';
 
 interface OnboardingData {
   userName?: string;

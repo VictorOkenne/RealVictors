@@ -8,9 +8,9 @@
  * - Stats (team and player statistics)
  */
 
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import React from 'react';
-import { MainTeamProfilePage } from '../src/components/screens/TeamProfilePage';
+import { MainTeamProfilePage } from '@/components/screens/TeamProfilePage';
 
 export default function TeamProfile() {
   const router = useRouter();
@@ -21,10 +21,13 @@ export default function TeamProfile() {
   const sport = (params.sport as 'soccer' | 'basketball') || 'soccer';
 
   return (
-    <MainTeamProfilePage
-      teamId={teamId}
-      sport={sport}
-      onBackPress={() => router.back()}
-    />
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <MainTeamProfilePage
+        teamId={teamId}
+        sport={sport}
+        onBackPress={() => router.back()}
+      />
+    </>
   );
 }

@@ -6,7 +6,7 @@
  */
 
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { ChatPage } from '../src/components/screens/MessagesPage';
+import { ChatPage } from '@/components/screens/MessagesPage';
 
 export default function ChatScreen() {
   const params = useLocalSearchParams();

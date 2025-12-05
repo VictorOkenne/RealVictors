@@ -5,9 +5,9 @@ import {
     useFonts,
 } from '@expo-google-fonts/montserrat';
 import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
-import { MainSignupPage } from '../../src/components/screens/AuthScreens/Signup';
-import { useAuth } from '../../src/contexts/AuthContext';
-import { useAppTheme } from '../../src/utils/theme';
+import { MainSignupPage } from '@/components/screens/AuthScreens/Signup';
+import { useAuth } from '@/contexts/AuthContext';
+import { useAppTheme } from '@/utils/theme';
 
 
 export default function SignupScreen() {

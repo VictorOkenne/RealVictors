@@ -12,7 +12,7 @@
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StyleSheet } from 'react-native';
-import { MainMatchPage } from '../src/components/screens/MatchPage';
+import { MainMatchPage } from '@/components/screens/MatchPage';
 
 export default function MatchScreen() {
   const router = useRouter();

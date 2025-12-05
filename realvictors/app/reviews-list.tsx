@@ -1,6 +1,6 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { ReviewsListView } from '../src/components/screens/UserProfilePage/ReviewsListView';
-import { mockSoccerReviews, mockBasketballReviews } from '../src/components/screens/UserProfilePage/mockData';
+import { ReviewsListView } from '@/components/screens/UserProfilePage/ReviewsListView';
+import { mockSoccerReviews, mockBasketballReviews } from '@/components/screens/UserProfilePage/mockData';
 
 export default function ReviewsListScreen() {
   const params = useLocalSearchParams();

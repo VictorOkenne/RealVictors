@@ -1,16 +1,17 @@
 /**
  * MatchesView Component (Team Profile)
  *
- * Displays team matches with:
- * - Upcoming Matches (horizontal scroll)
- * - Previous Matches (vertical list)
+ * Displays team's match history and upcoming matches
+ * Uses the exact same GamesListWithTabs component as UserProfilePage for consistency
  */
 
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS, TYPOGRAPHY } from '../../../constants';
-import { LocationIcon } from '../../icons';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { COLORS } from '../../../constants';
+import { FilterIcon } from '../../icons';
+import { DateRangePicker, FilterModal, FilterSection, FilterState, GamesListWithTabs } from '../../widgets';
+import { previousGames, upcomingGames } from '../AllGamespage/mockData';
 import { TeamMatch } from './mockData';
 
 interface MatchesViewProps {
@@ -18,147 +19,354 @@ interface MatchesViewProps {
   previousMatches?: TeamMatch[];
 }
 
-interface UpcomingMatchCardProps {
-  match: TeamMatch;
-  onPress: () => void;
-}
-
-const UpcomingMatchCard: React.FC<UpcomingMatchCardProps> = ({ match, onPress }) => {
-  return (
-    <TouchableOpacity style={styles.upcomingCard} onPress={onPress} activeOpacity={0.8}>
-      <View style={styles.upcomingCardContent}>
-        {/* Competition Name */}
-        <Text style={styles.competitionName}>{match.competition}</Text>
-
-        {/* Teams and Time */}
-        <View style={styles.matchupContainer}>
-          {/* Home Team */}
-          <View style={styles.teamContainer}>
-            <Image source={match.homeTeam.logo} style={styles.teamLogo} resizeMode="contain" />
-            <Text style={styles.teamLabel}>HOME</Text>
-          </View>
-
-          {/* Time */}
-          <View style={styles.timeContainer}>
-            <Text style={styles.matchTime}>{match.matchTime}</Text>
-            <Text style={styles.matchDate}>{match.matchDate}</Text>
-          </View>
-
-          {/* Away Team */}
-          <View style={styles.teamContainer}>
-            <Image source={match.awayTeam.logo} style={styles.teamLogo} resizeMode="contain" />
-            <Text style={styles.teamLabel}>AWAY</Text>
-          </View>
-        </View>
-
-        {/* Venue */}
-        {match.venue && (
-          <View style={styles.venueContainer}>
-            <LocationIcon width={14} height={14} color={COLORS.gold} />
-            <Text style={styles.venueText}>{match.venue}</Text>
-          </View>
-        )}
-
-        {/* Group (if applicable) */}
-        {match.group && (
-          <View style={styles.groupBadge}>
-            <Text style={styles.groupText}>{match.group}</Text>
-          </View>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
-};
-
-interface PreviousMatchCardProps {
-  match: TeamMatch;
-  onPress: () => void;
-}
-
-const PreviousMatchCard: React.FC<PreviousMatchCardProps> = ({ match, onPress }) => {
-  return (
-    <TouchableOpacity style={styles.previousCard} onPress={onPress} activeOpacity={0.8}>
-      {/* Competition Name */}
-      <Text style={styles.competitionNameSmall}>{match.competition}</Text>
-
-      {/* Teams and Score */}
-      <View style={styles.previousMatchup}>
-        {/* Home Team */}
-        <View style={styles.previousTeam}>
-          <Image source={match.homeTeam.logo} style={styles.teamLogoSmall} resizeMode="contain" />
-          <Text style={styles.teamNameSmall} numberOfLines={1}>{match.homeTeam.name}</Text>
-        </View>
-
-        {/* Score */}
-        <View style={styles.scoreContainer}>
-          <Text style={styles.scoreText}>
-            {match.homeTeam.score} - {match.awayTeam.score}
-          </Text>
-        </View>
-
-        {/* Away Team */}
-        <View style={styles.previousTeam}>
-          <Image source={match.awayTeam.logo} style={styles.teamLogoSmall} resizeMode="contain" />
-          <Text style={styles.teamNameSmall} numberOfLines={1}>{match.awayTeam.name}</Text>
-        </View>
-      </View>
-
-      {/* Date */}
-      <Text style={styles.previousDate}>{match.matchDate}</Text>
-    </TouchableOpacity>
-  );
-};
+type TabType = 'upcoming' | 'previous';
 
 export const MatchesView: React.FC<MatchesViewProps> = ({
   upcomingMatches = [],
   previousMatches = [],
 }) => {
   const router = useRouter();
+  const [showFilterModal, setShowFilterModal] = React.useState(false);
+  const [showDateRangePicker, setShowDateRangePicker] = React.useState(false);
+  const [activeTab, setActiveTab] = React.useState<TabType>('upcoming');
+  const [customStartDate, setCustomStartDate] = React.useState<Date | null>(null);
+  const [customEndDate, setCustomEndDate] = React.useState<Date | null>(null);
 
-  const handleMatchPress = (matchId: string) => {
-    console.log('Match pressed:', matchId);
-    // Navigate to match details
-    // router.push(`/match?id=${matchId}`);
+  // Initialize filters
+  const [filters, setFilters] = React.useState<FilterState>({
+    sortBy: 'recent',
+    result: [],
+    sport: [],
+    team: [],
+    tournament: [],
+    dateRange: 'allTime',
+  });
+
+  // Calculate min and max dates based on active tab
+  const dateConstraints = React.useMemo(() => {
+    const now = new Date();
+
+    if (activeTab === 'upcoming') {
+      // For upcoming games: today to max upcoming game date
+      const maxUpcomingDate = upcomingGames.reduce((max, game) => {
+        const gameDate = game.sortDate || 0;
+        return gameDate > max ? gameDate : max;
+      }, 0);
+
+      return {
+        minDate: now,
+        maxDate: maxUpcomingDate > 0 ? new Date(maxUpcomingDate) : new Date(now.getFullYear() + 1, 11, 31),
+      };
+    } else {
+      // For previous games: any past date to today
+      return {
+        minDate: new Date(2020, 0, 1), // Reasonable past date
+        maxDate: now,
+      };
+    }
+  }, [activeTab]);
+
+  const handleGamePress = (gameId: string) => {
+    // Find the game to get its sport
+    const game = [...upcomingGames, ...previousGames].find(g => g.id === gameId);
+    const sport = game?.sport || 'soccer';
+
+    // Navigate to match details page with sport parameter
+    router.push(`/match?sport=${sport}`);
+    console.log('Game pressed:', gameId, 'sport:', sport);
+  };
+
+  // Get unique teams and tournaments from data
+  const allTeams = React.useMemo(() => {
+    const teams = new Set<string>();
+    [...upcomingGames, ...previousGames].forEach(game => {
+      if (game.userTeam) teams.add(game.userTeam);
+    });
+    return Array.from(teams).sort();
+  }, []);
+
+  const allTournaments = React.useMemo(() => {
+    const tournaments = new Set<string>();
+    [...upcomingGames, ...previousGames].forEach(game => {
+      if (game.tournament) tournaments.add(game.tournament);
+    });
+    return Array.from(tournaments).sort();
+  }, []);
+
+  // Filter sections based on active tab
+  const filterSections: FilterSection[] = React.useMemo(() => {
+    const sections: FilterSection[] = [
+      {
+        title: 'Sort By',
+        key: 'sortBy',
+        options: [
+          { label: 'Most Recent', value: 'recent' },
+          { label: 'Oldest First', value: 'oldest' },
+        ],
+      },
+      {
+        title: 'Date Range',
+        key: 'dateRange',
+        multiSelect: false,
+        options: [
+          { label: 'All Time', value: 'allTime' },
+          { label: 'Today', value: 'today' },
+          { label: 'Yesterday', value: 'yesterday' },
+          { label: 'Last 7 Days', value: 'last7days' },
+          { label: 'Last 30 Days', value: 'last30days' },
+          { label: 'This Year', value: 'thisYear' },
+          { label: 'Last Year', value: 'lastYear' },
+          { label: 'Custom Date Range', value: 'customRange' },
+        ],
+      },
+      {
+        title: 'Sport',
+        key: 'sport',
+        multiSelect: true,
+        options: [
+          { label: 'Soccer', value: 'soccer' },
+          { label: 'Basketball', value: 'basketball' },
+        ],
+      },
+      {
+        title: 'Team',
+        key: 'team',
+        multiSelect: true,
+        options: allTeams.map(team => ({ label: team, value: team })),
+      },
+    ];
+
+    // Add result filter only for previous games
+    if (activeTab === 'previous') {
+      sections.splice(2, 0, {
+        title: 'Result',
+        key: 'result',
+        multiSelect: true,
+        options: [
+          { label: 'Wins', value: 'win' },
+          { label: 'Losses', value: 'loss' },
+          { label: 'Draws', value: 'draw' },
+        ],
+      });
+    }
+
+    // Add tournament filter only for upcoming games
+    if (activeTab === 'upcoming') {
+      sections.push({
+        title: 'Tournament/League',
+        key: 'tournament',
+        multiSelect: true,
+        options: allTournaments.map(tournament => ({ label: tournament, value: tournament })),
+      });
+    }
+
+    return sections;
+  }, [activeTab, allTeams, allTournaments]);
+
+  // Helper function to check if a date matches selected date range
+  const isDateInRange = React.useCallback((gameDate: number, dateRange: string) => {
+    if (!dateRange) return true;
+
+    // If "All Time" is selected, show all games
+    if (dateRange === 'allTime') return true;
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const yesterday = today - 24 * 60 * 60 * 1000;
+    const last7Days = today - 7 * 24 * 60 * 60 * 1000;
+    const last30Days = today - 30 * 24 * 60 * 60 * 1000;
+    const thisYearStart = new Date(now.getFullYear(), 0, 1).getTime();
+    const lastYearStart = new Date(now.getFullYear() - 1, 0, 1).getTime();
+    const lastYearEnd = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59).getTime();
+
+    switch (dateRange) {
+      case 'allTime':
+        return true;
+      case 'today':
+        return gameDate >= today && gameDate < today + 24 * 60 * 60 * 1000;
+      case 'yesterday':
+        return gameDate >= yesterday && gameDate < today;
+      case 'last7days':
+        return gameDate >= last7Days;
+      case 'last30days':
+        return gameDate >= last30Days;
+      case 'thisYear':
+        return gameDate >= thisYearStart;
+      case 'lastYear':
+        return gameDate >= lastYearStart && gameDate <= lastYearEnd;
+      case 'customRange':
+        // Check if custom dates are set
+        if (customStartDate && customEndDate) {
+          const startTime = new Date(customStartDate).setHours(0, 0, 0, 0);
+          const endTime = new Date(customEndDate).setHours(23, 59, 59, 999);
+          return gameDate >= startTime && gameDate <= endTime;
+        }
+        return true;
+      default:
+        return true;
+    }
+  }, [customStartDate, customEndDate]);
+
+  // Apply filters to upcoming games
+  const filteredUpcomingGames = React.useMemo(() => {
+    let filtered = [...upcomingGames];
+
+    // Filter by date range
+    const dateRange = filters.dateRange as string | undefined;
+    if (dateRange) {
+      filtered = filtered.filter(game => isDateInRange(game.sortDate || 0, dateRange));
+    }
+
+    // Filter by sport
+    const sports = filters.sport as string[] | undefined;
+    if (sports && sports.length > 0) {
+      filtered = filtered.filter(game => sports.includes(game.sport));
+    }
+
+    // Filter by team
+    const teams = filters.team as string[] | undefined;
+    if (teams && teams.length > 0) {
+      filtered = filtered.filter(game => teams.includes(game.userTeam));
+    }
+
+    // Filter by tournament
+    const tournaments = filters.tournament as string[] | undefined;
+    if (tournaments && tournaments.length > 0) {
+      filtered = filtered.filter(game => game.tournament && tournaments.includes(game.tournament));
+    }
+
+    // Sort
+    if (filters.sortBy === 'oldest') {
+      filtered.sort((a, b) => (a.sortDate || 0) - (b.sortDate || 0));
+    } else {
+      filtered.sort((a, b) => (b.sortDate || 0) - (a.sortDate || 0));
+    }
+
+    return filtered;
+  }, [filters, isDateInRange]);
+
+  // Apply filters to previous games
+  const filteredPreviousGames = React.useMemo(() => {
+    let filtered = [...previousGames];
+
+    // Filter by date range
+    const dateRange = filters.dateRange as string | undefined;
+    if (dateRange) {
+      filtered = filtered.filter(game => isDateInRange(game.sortDate || 0, dateRange));
+    }
+
+    // Filter by result
+    const results = filters.result as string[] | undefined;
+    if (results && results.length > 0) {
+      filtered = filtered.filter(game => results.includes(game.result));
+    }
+
+    // Filter by sport
+    const sports = filters.sport as string[] | undefined;
+    if (sports && sports.length > 0) {
+      filtered = filtered.filter(game => sports.includes(game.sport));
+    }
+
+    // Filter by team
+    const teams = filters.team as string[] | undefined;
+    if (teams && teams.length > 0) {
+      filtered = filtered.filter(game => teams.includes(game.userTeam));
+    }
+
+    // Sort
+    if (filters.sortBy === 'oldest') {
+      filtered.sort((a, b) => (a.sortDate || 0) - (b.sortDate || 0));
+    } else {
+      filtered.sort((a, b) => (b.sortDate || 0) - (a.sortDate || 0));
+    }
+
+    return filtered;
+  }, [filters, isDateInRange]);
+
+  // Watch for custom range selection
+  React.useEffect(() => {
+    const dateRange = filters.dateRange as string | undefined;
+    if (dateRange === 'customRange') {
+      setShowDateRangePicker(true);
+    }
+  }, [filters.dateRange]);
+
+  const handleApplyFilters = (newFilters: FilterState) => {
+    setFilters(newFilters);
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      sortBy: 'recent',
+      result: [],
+      sport: [],
+      team: [],
+      tournament: [],
+      dateRange: 'allTime',
+    });
+    setCustomStartDate(null);
+    setCustomEndDate(null);
+  };
+
+  const handleCustomDateRangeApply = (startDate: Date, endDate: Date) => {
+    setCustomStartDate(startDate);
+    setCustomEndDate(endDate);
+    setShowDateRangePicker(false);
+  };
+
+  const handleCustomDateRangeClose = () => {
+    // If closing without applying, reset to allTime
+    if (!customStartDate || !customEndDate) {
+      setFilters(prev => ({
+        ...prev,
+        dateRange: 'allTime',
+      }));
+    }
+    setShowDateRangePicker(false);
   };
 
   return (
     <View style={styles.container}>
-      {/* Upcoming Matches Section */}
-      {upcomingMatches.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Upcoming Matches</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalScroll}
+      <GamesListWithTabs
+        upcomingGames={filteredUpcomingGames}
+        previousGames={filteredPreviousGames}
+        backgroundColor={COLORS.white}
+        tabTextColor={COLORS.gray500}
+        tabTextActiveColor={COLORS.black}
+        nestedScrollEnabled={true}
+        onGamePress={handleGamePress}
+        onTabChange={setActiveTab}
+        renderFilterButton={() => (
+          <TouchableOpacity
+            style={styles.filterButton}
+            onPress={() => setShowFilterModal(true)}
+            activeOpacity={0.7}
           >
-            {upcomingMatches.map((match) => (
-              <UpcomingMatchCard
-                key={match.matchId}
-                match={match}
-                onPress={() => handleMatchPress(match.matchId)}
-              />
-            ))}
-          </ScrollView>
-        </View>
-      )}
+            <FilterIcon width={20} height={20} color={COLORS.black} />
+          </TouchableOpacity>
+        )}
+      />
 
-      {/* Previous Matches Section */}
-      {previousMatches.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Previous Matches</Text>
-          <FlatList
-            data={previousMatches}
-            keyExtractor={(item) => item.matchId}
-            renderItem={({ item }) => (
-              <PreviousMatchCard match={item} onPress={() => handleMatchPress(item.matchId)} />
-            )}
-            contentContainerStyle={styles.verticalList}
-            showsVerticalScrollIndicator={false}
-            scrollEnabled={false} // Parent ScrollView handles scrolling
-          />
-        </View>
-      )}
+      {/* Filter Modal */}
+      <FilterModal
+        visible={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        sections={filterSections}
+        selectedFilters={filters}
+        onApply={handleApplyFilters}
+        onReset={handleResetFilters}
+      />
+
+      {/* Custom Date Range Picker */}
+      <DateRangePicker
+        visible={showDateRangePicker}
+        onClose={handleCustomDateRangeClose}
+        onApply={handleCustomDateRangeApply}
+        initialStartDate={customStartDate || undefined}
+        initialEndDate={customEndDate || undefined}
+        minDate={dateConstraints.minDate}
+        maxDate={dateConstraints.maxDate}
+      />
     </View>
   );
 };
@@ -167,155 +375,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 20,
-    color: COLORS.black,
-    marginBottom: 16,
-  },
-  horizontalScroll: {
-    paddingRight: 20,
-    gap: 16,
-  },
-  verticalList: {
-    gap: 12,
-  },
-
-  // Upcoming Match Card
-  upcomingCard: {
-    width: 320,
-    backgroundColor: COLORS.gray900,
+  filterButton: {
+    width: 44,
+    height: 44,
     borderRadius: 12,
-    overflow: 'hidden',
-  },
-  upcomingCardContent: {
-    padding: 16,
-    gap: 12,
-  },
-  competitionName: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 12,
-    color: COLORS.gold,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    textAlign: 'center',
-  },
-  matchupContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: 12,
-  },
-  teamContainer: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 8,
-  },
-  teamLogo: {
-    width: 50,
-    height: 50,
-  },
-  teamLabel: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 10,
-    color: COLORS.white,
-    letterSpacing: 0.5,
-  },
-  timeContainer: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  matchTime: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 20,
-    color: COLORS.white,
-  },
-  matchDate: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    fontSize: 11,
-    color: COLORS.gray400,
-    textTransform: 'uppercase',
-  },
-  venueContainer: {
-    flexDirection: 'row',
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.gray300,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-  },
-  venueText: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    fontSize: 11,
-    color: COLORS.gold,
-    textTransform: 'uppercase',
-  },
-  groupBadge: {
-    alignSelf: 'flex-end',
-    backgroundColor: COLORS.gold,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  groupText: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 10,
-    color: COLORS.black,
-  },
-
-  // Previous Match Card
-  previousCard: {
-    backgroundColor: COLORS.gray900,
-    borderRadius: 12,
-    padding: 16,
-    gap: 8,
-  },
-  competitionNameSmall: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 11,
-    color: COLORS.gold,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  previousMatchup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  previousTeam: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  teamLogoSmall: {
-    width: 32,
-    height: 32,
-  },
-  teamNameSmall: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 13,
-    color: COLORS.white,
-    flex: 1,
-  },
-  scoreContainer: {
-    backgroundColor: COLORS.black,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  scoreText: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 18,
-    color: COLORS.white,
-  },
-  previousDate: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    fontSize: 11,
-    color: COLORS.gray400,
-    textAlign: 'center',
   },
 });
 

@@ -19,6 +19,12 @@ export { HomeHeader } from './AppWide/HomeHeader';
 export { NotificationBadge } from './AppWide/NotificationBadge';
 export { SearchBar } from './AppWide/SearchBar';
 export { TabFilter } from './AppWide/TabFilter';
+export { MedalStatsDisplay } from './AppWide/MedalStatsDisplay';
+export { StatRankingsSection, type StatRanking, type RankingScope } from './AppWide/StatRankingsSection';
+export { PerformerStatsCard, type PerformerStatsData, type PerformerSportType } from './AppWide/PerformerStatsCard';
+export { PerformerStatsCarousel } from './AppWide/PerformerStatsCarousel';
+export { LeagueStandingsTable, type LeagueStandingsEntry, type LeagueStandingsTableProps } from './AppWide/LeagueStandingsTable';
+export { CareerStatsSection, type StatsCategory, type SoccerCareerStats, type BasketballCareerStats } from './AppWide/CareerStatsSection';
 
 // MatchGame Widgets
 export { YouTubePlayer } from './AppWide/YouTubePlayer';
@@ -36,8 +42,8 @@ export { StatBar } from './MatchGame/StatBar';
 export { Substitutions } from './MatchGame/Substitutions';
 export { TeamHeadToHeadCard } from './MatchGame/TeamHeadToHeadCard';
 export { TeamToggle } from './MatchGame/TeamToggle';
-export { TopPerformerCard, type TopPerformerData } from './MatchGame/TopPerformerCard';
-export { TopPerformersCarousel } from './MatchGame/TopPerformersCarousel';
+export { PerformerStatsCard as TopPerformerCard, type PerformerStatsData as TopPerformerData } from './AppWide/PerformerStatsCard';
+export { PerformerStatsCarousel as TopPerformersCarousel } from './AppWide/PerformerStatsCarousel';
 export { UnifiedBench } from './MatchGame/UnifiedBench';
 
 // Player Widgets

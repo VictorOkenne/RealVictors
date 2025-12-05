@@ -12,7 +12,7 @@
  */
 
 import { StyleSheet, Text, View } from 'react-native';
-import { useAppTheme } from '../../src/utils/theme';
+import { useAppTheme } from '@/utils/theme';
 
 /**
  * StatsScreen Component

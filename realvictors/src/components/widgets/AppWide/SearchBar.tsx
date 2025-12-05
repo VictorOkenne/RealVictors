@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, View, ViewStyle, StyleProp } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, TYPOGRAPHY } from '../../../constants';
 
@@ -14,16 +14,20 @@ interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
+  icon?: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
   value,
   onChangeText,
   placeholder = 'Search',
+  icon,
+  style,
 }) => {
   return (
-    <View style={styles.container}>
-      <Ionicons name="search" size={20} color={COLORS.gray400} style={styles.icon} />
+    <View style={[styles.container, style]}>
+      {icon || <Ionicons name="search" size={20} color={COLORS.gray400} style={styles.icon} />}
       <TextInput
         style={styles.input}
         value={value}

@@ -2,245 +2,261 @@
  * CompetitionsView Component
  *
  * Displays team's competition history with:
- * - Dropdown to filter competitions (current/past)
- * - League tables
+ * - Dropdown to select different competitions
+ * - League tables with "All" and "Form" views
  * - Tournament brackets
- * - Toggle between "All", "Form", and "Overall" for league tables
- * - Tournament round selection (Round of 16, Quarter Finals, etc.)
+ * - Position indicators (gold/silver/bronze) for top 3
+ * - Team highlighting
  */
 
 import React, { useState } from 'react';
-import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS, TYPOGRAPHY } from '../../../constants';
+import { LeagueStandingsEntry, LeagueStandingsTable } from '../../widgets/AppWide/LeagueStandingsTable';
+import { TournamentBracket } from '../../widgets/AppWide/TournamentBracket';
+import { TournamentGroupStage } from '../../widgets/AppWide/TournamentGroupStage';
 import {
+  Competition,
   LeagueTable,
-  LeagueTableEntry,
-  mockLeagueTable,
   mockBasketballLeagueTable,
-  mockTournamentBracket,
+  mockChampionsLeagueTournament,
+  mockLeagueTable,
+  mockNBAPlayoffsTournament,
+  mockPastLeagueTable,
+  mockPremierLeagueTable,
+  mockWorldCupTournament,
   SportType,
-  TournamentBracket,
-  TournamentMatch,
+  Tournament,
 } from './mockData';
 
-type CompetitionFilter = 'current' | 'past';
-type ViewType = 'league' | 'tournament';
-type TableView = 'all' | 'form' | 'overall';
+type TableView = 'all' | 'form';
 
 interface CompetitionsViewProps {
   sport?: SportType;
+  teamShortName?: string; // Team to highlight (e.g., 'CFC' for Chelsea)
 }
 
-interface LeagueTableRowProps {
-  entry: LeagueTableEntry;
-  isHighlighted?: boolean;
-  isBasketball?: boolean;
-}
-
-const LeagueTableRow: React.FC<LeagueTableRowProps> = ({ entry, isHighlighted, isBasketball = false }) => {
-  return (
-    <View style={[styles.tableRow, isHighlighted && styles.tableRowHighlighted]}>
-      <Text style={styles.rankCell}>{entry.rank}</Text>
-      <View style={styles.teamCell}>
-        <Image source={entry.team.logo} style={styles.teamLogoTable} resizeMode="contain" />
-        <Text style={styles.teamNameTable} numberOfLines={1}>
-          {entry.team.shortName}
-        </Text>
-      </View>
-      <Text style={styles.statCell}>{entry.played}</Text>
-      <Text style={styles.statCell}>{entry.won}</Text>
-      {!isBasketball && <Text style={styles.statCell}>{entry.drawn}</Text>}
-      <Text style={styles.statCell}>{entry.lost}</Text>
-      {!isBasketball && (
-        <>
-          <Text style={styles.statCell}>{entry.goalDifference > 0 ? '+' : ''}{entry.goalDifference}</Text>
-          <Text style={styles.statCell}>{entry.goalsAgainst}</Text>
-        </>
-      )}
-      <Text style={[styles.statCell, styles.pointsCell]}>{entry.points}</Text>
-    </View>
-  );
-};
-
-interface TournamentMatchCardProps {
-  match: TournamentMatch;
-}
-
-const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({ match }) => {
-  return (
-    <View style={styles.tournamentMatch}>
-      {/* Team 1 */}
-      <View style={styles.tournamentTeam}>
-        <Image source={match.team1.logo} style={styles.tournamentLogo} resizeMode="contain" />
-        <Text style={styles.tournamentTeamName}>{match.team1.shortName}</Text>
-        <View style={styles.tournamentScore}>
-          <Text style={styles.tournamentScoreText}>{match.team1.score}</Text>
-        </View>
-      </View>
-
-      {/* Team 2 */}
-      <View style={styles.tournamentTeam}>
-        <Image source={match.team2.logo} style={styles.tournamentLogo} resizeMode="contain" />
-        <Text style={styles.tournamentTeamName}>{match.team2.shortName}</Text>
-        <View style={styles.tournamentScore}>
-          <Text style={styles.tournamentScoreText}>{match.team2.score}</Text>
-        </View>
-      </View>
-    </View>
-  );
-};
-
-export const CompetitionsView: React.FC<CompetitionsViewProps> = ({ sport = 'soccer' }) => {
-  const [competitionFilter, setCompetitionFilter] = useState<CompetitionFilter>('current');
-  const [viewType, setViewType] = useState<ViewType>('league');
-  const [tableView, setTableView] = useState<TableView>('all');
-  const [selectedRound, setSelectedRound] = useState(0);
-
+export const CompetitionsView: React.FC<CompetitionsViewProps> = ({
+  sport = 'soccer',
+  teamShortName = 'CFC',
+}) => {
   const isBasketball = sport === 'basketball';
 
-  // Mock data - in real app, filter based on competitionFilter
-  const leagueData: LeagueTable = isBasketball ? mockBasketballLeagueTable : mockLeagueTable;
-  const tournamentData: TournamentBracket = mockTournamentBracket;
+  // Available competitions - in real app, fetch from API based on team
+  const availableCompetitions: Competition[] = isBasketball
+    ? [
+        {
+          id: 'nba1',
+          name: 'NBA Western Conference',
+          type: 'league',
+          icon: '🏀',
+          isCurrent: true,
+          data: mockBasketballLeagueTable,
+        },
+        {
+          id: 'nba-playoffs-2025',
+          name: 'NBA Playoffs',
+          type: 'tournament',
+          icon: '🏆',
+          isCurrent: true,
+          data: mockNBAPlayoffsTournament,
+        },
+      ]
+    : [
+        {
+          id: 'comp1',
+          name: 'Inter State League',
+          type: 'league',
+          icon: '💎',
+          isCurrent: true,
+          data: mockLeagueTable,
+        },
+        {
+          id: 'comp-pl',
+          name: 'Premier League',
+          type: 'league',
+          icon: '⚽',
+          isCurrent: true,
+          data: mockPremierLeagueTable,
+        },
+        {
+          id: 'wc-2026',
+          name: 'World Cup 2026',
+          type: 'tournament',
+          icon: '🏆',
+          isCurrent: true,
+          data: mockWorldCupTournament,
+        },
+        {
+          id: 'ucl-2025',
+          name: 'UEFA Champions League',
+          type: 'tournament',
+          icon: '⚽',
+          isCurrent: true,
+          data: mockChampionsLeagueTournament,
+        },
+        {
+          id: 'comp-past',
+          name: 'Champions League 2023-24',
+          type: 'league',
+          icon: '🏆',
+          isCurrent: false,
+          data: mockPastLeagueTable,
+        },
+      ];
+
+  // Separate current and past competitions
+  const currentCompetitions = availableCompetitions.filter((c) => c.isCurrent);
+  const pastCompetitions = availableCompetitions.filter((c) => !c.isCurrent);
+
+  const [selectedCompetitionId, setSelectedCompetitionId] = useState(availableCompetitions[0].id);
+  const [tableView, setTableView] = useState<TableView>('all');
+  const [showCompetitionDropdown, setShowCompetitionDropdown] = useState(false);
+
+  const selectedCompetition = availableCompetitions.find((c) => c.id === selectedCompetitionId);
+
+  // Check if selected competition is a tournament or league
+  const isTournament = selectedCompetition?.type === 'tournament';
+  const isLeague = selectedCompetition?.type === 'league';
 
   return (
     <View style={styles.container}>
-      {/* Competition Filter Dropdown */}
-      <View style={styles.filterContainer}>
-        <View style={styles.filterIcon}>
-          <Text style={styles.filterIconText}>🏆</Text>
-        </View>
-        <View style={styles.filterDropdown}>
-          <TouchableOpacity
-            style={[styles.filterButton, competitionFilter === 'current' && styles.filterButtonActive]}
-            onPress={() => setCompetitionFilter('current')}
-          >
-            <Text style={[styles.filterButtonText, competitionFilter === 'current' && styles.filterButtonTextActive]}>
-              Current
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.filterButton, competitionFilter === 'past' && styles.filterButtonActive]}
-            onPress={() => setCompetitionFilter('past')}
-          >
-            <Text style={[styles.filterButtonText, competitionFilter === 'past' && styles.filterButtonTextActive]}>
-              Past
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity style={styles.dropdownIcon}>
-          <Text style={styles.dropdownIconText}>▼</Text>
+      {/* Competition Dropdown */}
+      <View style={styles.competitionDropdownContainer}>
+        <TouchableOpacity
+          style={styles.competitionDropdown}
+          onPress={() => setShowCompetitionDropdown(!showCompetitionDropdown)}
+        >
+          <View style={styles.competitionIconContainer}>
+            <Text style={styles.competitionIcon}>{selectedCompetition?.icon}</Text>
+          </View>
+          <Text style={styles.competitionName}>{selectedCompetition?.name}</Text>
+          <Text style={styles.dropdownArrow}>▼</Text>
         </TouchableOpacity>
+
+        {/* Dropdown Menu (Simple version - in production, use a proper modal/picker) */}
+        {showCompetitionDropdown && (
+          <View style={styles.dropdownMenu}>
+            {currentCompetitions.length > 0 && (
+              <>
+                <Text style={styles.dropdownSectionTitle}>Current</Text>
+                {currentCompetitions.map((comp) => (
+                  <TouchableOpacity
+                    key={comp.id}
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setSelectedCompetitionId(comp.id);
+                      setShowCompetitionDropdown(false);
+                    }}
+                  >
+                    <Text style={styles.dropdownItemIcon}>{comp.icon}</Text>
+                    <Text style={styles.dropdownItemText}>{comp.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </>
+            )}
+            {pastCompetitions.length > 0 && (
+              <>
+                <Text style={styles.dropdownSectionTitle}>Past</Text>
+                {pastCompetitions.map((comp) => (
+                  <TouchableOpacity
+                    key={comp.id}
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      setSelectedCompetitionId(comp.id);
+                      setShowCompetitionDropdown(false);
+                    }}
+                  >
+                    <Text style={styles.dropdownItemIcon}>{comp.icon}</Text>
+                    <Text style={styles.dropdownItemText}>{comp.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </>
+            )}
+          </View>
+        )}
       </View>
 
-      {/* View Type Toggle (League/Tournament) */}
-      <View style={styles.viewTypeContainer}>
-        <TouchableOpacity
-          style={[styles.viewTypeButton, viewType === 'league' && styles.viewTypeButtonActive]}
-          onPress={() => setViewType('league')}
-        >
-          <Text style={[styles.viewTypeText, viewType === 'league' && styles.viewTypeTextActive]}>
-            League Table
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.viewTypeButton, viewType === 'tournament' && styles.viewTypeButtonActive]}
-          onPress={() => setViewType('tournament')}
-        >
-          <Text style={[styles.viewTypeText, viewType === 'tournament' && styles.viewTypeTextActive]}>
-            Tournament
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* League Table View */}
-      {viewType === 'league' && (
-        <View style={styles.leagueContainer}>
-          {/* Table View Toggle */}
+      {/* Content based on competition type */}
+      {isLeague && (
+        <>
+          {/* Table View Toggle (All / Form) - Only for leagues */}
           <View style={styles.tableViewToggle}>
             <TouchableOpacity
               style={[styles.tableViewButton, tableView === 'all' && styles.tableViewButtonActive]}
               onPress={() => setTableView('all')}
             >
-              <Text style={[styles.tableViewText, tableView === 'all' && styles.tableViewTextActive]}>All</Text>
+              <Text style={[styles.tableViewText, tableView === 'all' && styles.tableViewTextActive]}>
+                All
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.tableViewButton, tableView === 'form' && styles.tableViewButtonActive]}
               onPress={() => setTableView('form')}
             >
-              <Text style={[styles.tableViewText, tableView === 'form' && styles.tableViewTextActive]}>Form</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.tableViewButton, tableView === 'overall' && styles.tableViewButtonActive]}
-              onPress={() => setTableView('overall')}
-            >
-              <Text style={[styles.tableViewText, tableView === 'overall' && styles.tableViewTextActive]}>Overall</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.overallDropdown}>
-              <Text style={styles.overallDropdownText}>▼</Text>
+              <Text style={[styles.tableViewText, tableView === 'form' && styles.tableViewTextActive]}>
+                Form
+              </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Table Header */}
-          <View style={styles.tableHeader}>
-            <Text style={styles.headerCell}>#</Text>
-            <Text style={[styles.headerCell, styles.teamHeaderCell]}>Team</Text>
-            <Text style={styles.headerCell}>{isBasketball ? 'GP' : 'PL'}</Text>
-            <Text style={styles.headerCell}>W</Text>
-            {!isBasketball && <Text style={styles.headerCell}>D</Text>}
-            <Text style={styles.headerCell}>L</Text>
-            {!isBasketball && (
-              <>
-                <Text style={styles.headerCell}>+/-</Text>
-                <Text style={styles.headerCell}>GD</Text>
-              </>
-            )}
-            <Text style={[styles.headerCell, styles.pointsHeaderCell]}>
-              {isBasketball ? 'W' : 'PTS'}
-            </Text>
-          </View>
+          {/* League Standings Table */}
+          {(() => {
+            const leagueData = selectedCompetition?.data as LeagueTable;
+            const standingsData: LeagueStandingsEntry[] =
+              leagueData?.table.map((entry) => ({
+                rank: entry.rank,
+                team: entry.team,
+                played: entry.played,
+                won: entry.won,
+                drawn: entry.drawn,
+                lost: entry.lost,
+                goalsFor: entry.goalsFor,
+                goalsAgainst: entry.goalsAgainst,
+                goalDifference: entry.goalDifference,
+                points: entry.points,
+                form: entry.form,
+              })) || [];
 
-          {/* Table Body */}
-          <FlatList
-            data={leagueData.table}
-            keyExtractor={(item) => `${item.rank}`}
-            renderItem={({ item }) => (
-              <LeagueTableRow
-                entry={item}
-                isHighlighted={isBasketball ? item.team.shortName === 'LAL' : item.team.shortName === 'CFC'}
-                isBasketball={isBasketball}
+            return (
+              <LeagueStandingsTable
+                data={standingsData}
+                viewMode={tableView}
+                sport={sport}
+                highlightedTeamId={teamShortName}
+                showPositionIndicators={true}
               />
-            )}
-            showsVerticalScrollIndicator={false}
-            scrollEnabled={false}
-          />
-        </View>
+            );
+          })()}
+        </>
       )}
 
-      {/* Tournament View */}
-      {viewType === 'tournament' && (
-        <View style={styles.tournamentContainer}>
-          {/* Round Selection */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.roundSelector}>
-            {tournamentData.rounds.map((round, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[styles.roundButton, selectedRound === index && styles.roundButtonActive]}
-                onPress={() => setSelectedRound(index)}
-              >
-                <Text style={[styles.roundButtonText, selectedRound === index && styles.roundButtonTextActive]}>
-                  {round.roundName}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+      {isTournament && (
+        <>
+          {/* Tournament View */}
+          {(() => {
+            const tournamentData = selectedCompetition?.data as Tournament;
 
-          {/* Tournament Matches */}
-          <View style={styles.tournamentMatches}>
-            {tournamentData.rounds[selectedRound].matches.map((match, index) => (
-              <TournamentMatchCard key={index} match={match} />
-            ))}
-          </View>
-        </View>
+            return (
+              <View style={styles.tournamentContainer}>
+                {/* Knockout Bracket */}
+                <TournamentBracket
+                  knockoutStage={tournamentData.knockoutStage}
+                  highlightedTeam={teamShortName}
+                />
+
+                {/* Group Stage (if exists) */}
+                {tournamentData.groupStage && (
+                  <TournamentGroupStage
+                    groupStage={tournamentData.groupStage}
+                    sport={sport}
+                    highlightedTeam={teamShortName}
+                  />
+                )}
+              </View>
+            );
+          })()}
+        </>
       )}
     </View>
   );
@@ -250,16 +266,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  filterContainer: {
+
+  // Competition Dropdown Styles
+  competitionDropdownContainer: {
+    marginBottom: 16,
+    position: 'relative',
+    zIndex: 10,
+  },
+  competitionDropdown: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.gray100,
     borderRadius: 12,
     padding: 12,
-    marginBottom: 16,
     gap: 12,
   },
-  filterIcon: {
+  competitionIconContainer: {
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -267,68 +289,62 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  filterIconText: {
+  competitionIcon: {
     fontSize: 16,
   },
-  filterDropdown: {
+  competitionName: {
     flex: 1,
-    flexDirection: 'row',
-    gap: 8,
-  },
-  filterButton: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: COLORS.white,
-    alignItems: 'center',
-  },
-  filterButtonActive: {
-    backgroundColor: COLORS.black,
-  },
-  filterButtonText: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 13,
-    color: COLORS.gray600,
+    fontSize: 14,
+    color: COLORS.black,
   },
-  filterButtonTextActive: {
-    color: COLORS.white,
-  },
-  dropdownIcon: {
-    padding: 4,
-  },
-  dropdownIconText: {
+  dropdownArrow: {
     fontSize: 12,
     color: COLORS.gray600,
   },
-  viewTypeContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
+  dropdownMenu: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    padding: 8,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+    zIndex: 20,
   },
-  viewTypeButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: COLORS.gray100,
-    alignItems: 'center',
-  },
-  viewTypeButtonActive: {
-    backgroundColor: COLORS.black,
-  },
-  viewTypeText: {
+  dropdownSectionTitle: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 14,
+    fontSize: 11,
     color: COLORS.gray600,
+    textTransform: 'uppercase',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    letterSpacing: 0.5,
   },
-  viewTypeTextActive: {
-    color: COLORS.white,
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    gap: 12,
+    borderRadius: 8,
+  },
+  dropdownItemIcon: {
+    fontSize: 16,
+  },
+  dropdownItemText: {
+    flex: 1,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    fontSize: 14,
+    color: COLORS.black,
   },
 
-  // League Table Styles
-  leagueContainer: {
-    flex: 1,
-  },
+  // Table View Toggle (All / Form)
   tableViewToggle: {
     flexDirection: 'row',
     backgroundColor: COLORS.black,
@@ -354,147 +370,10 @@ const styles = StyleSheet.create({
   tableViewTextActive: {
     color: COLORS.black,
   },
-  overallDropdown: {
-    padding: 8,
-    justifyContent: 'center',
-  },
-  overallDropdownText: {
-    fontSize: 10,
-    color: COLORS.white,
-  },
-  tableHeader: {
-    flexDirection: 'row',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: COLORS.gray100,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  headerCell: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 11,
-    color: COLORS.gray600,
-    width: 30,
-    textAlign: 'center',
-  },
-  teamHeaderCell: {
-    flex: 1,
-    textAlign: 'left',
-  },
-  pointsHeaderCell: {
-    width: 40,
-  },
-  tableRow: {
-    flexDirection: 'row',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    backgroundColor: COLORS.white,
-    borderRadius: 8,
-    marginBottom: 4,
-    alignItems: 'center',
-  },
-  tableRowHighlighted: {
-    backgroundColor: '#FFF9E6',
-    borderWidth: 1,
-    borderColor: COLORS.gold,
-  },
-  rankCell: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 13,
-    color: COLORS.black,
-    width: 30,
-    textAlign: 'center',
-  },
-  teamCell: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  teamLogoTable: {
-    width: 24,
-    height: 24,
-  },
-  teamNameTable: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 13,
-    color: COLORS.black,
-    flex: 1,
-  },
-  statCell: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    fontSize: 12,
-    color: COLORS.gray600,
-    width: 30,
-    textAlign: 'center',
-  },
-  pointsCell: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    color: COLORS.black,
-    width: 40,
-  },
 
   // Tournament Styles
   tournamentContainer: {
     flex: 1,
-  },
-  roundSelector: {
-    marginBottom: 16,
-  },
-  roundButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    backgroundColor: COLORS.gray100,
-    marginRight: 8,
-  },
-  roundButtonActive: {
-    backgroundColor: COLORS.black,
-  },
-  roundButtonText: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 13,
-    color: COLORS.gray600,
-  },
-  roundButtonTextActive: {
-    color: COLORS.white,
-  },
-  tournamentMatches: {
-    gap: 12,
-  },
-  tournamentMatch: {
-    backgroundColor: COLORS.gray900,
-    borderRadius: 12,
-    padding: 12,
-    gap: 8,
-  },
-  tournamentTeam: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  tournamentLogo: {
-    width: 28,
-    height: 28,
-  },
-  tournamentTeamName: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 14,
-    color: COLORS.white,
-    flex: 1,
-  },
-  tournamentScore: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.black,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tournamentScoreText: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 14,
-    color: COLORS.white,
   },
 });
 

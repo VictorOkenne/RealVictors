@@ -14,7 +14,7 @@ import { StyleSheet, View } from 'react-native';
 import { COLORS } from '../../../constants';
 import { TeamHeadToHeadCard } from '../../widgets/MatchGame/TeamHeadToHeadCard';
 import { TeamToggle } from '../../widgets/MatchGame/TeamToggle';
-import { TopPerformersCarousel } from '../../widgets/MatchGame/TopPerformersCarousel';
+import { PerformerStatsCarousel } from '../../widgets/AppWide/PerformerStatsCarousel';
 import {
     mockBasketballHeadToHeadStats,
     mockChelseaTopPerformers,
@@ -73,7 +73,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ matchData }) => {
       />
 
       {/* Top Performers Section */}
-      <TopPerformersCarousel
+      <PerformerStatsCarousel
         players={topPerformers}
         sport={matchData.sport}
         onPlayerPress={handlePlayerPress}

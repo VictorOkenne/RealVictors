@@ -12,8 +12,8 @@ import {
   useFonts,
 } from '@expo-google-fonts/montserrat';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { MainHomePage } from '../../src/components/screens/HomePage';
-import { useAppTheme } from '../../src/utils/theme';
+import { MainHomePage } from '@/components/screens/HomePage';
+import { useAppTheme } from '@/utils/theme';
 
 export default function HomeScreen() {
   const { colors } = useAppTheme();

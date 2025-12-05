@@ -4,8 +4,8 @@
  * Imports MainLoginPage component and connects it with AuthContext
  */
 
-import { MainLoginPage } from '../../src/components/screens/AuthScreens/Login';
-import { useAuth } from '../../src/contexts/AuthContext';
+import { MainLoginPage } from '@/components/screens/AuthScreens/Login';
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * LoginScreen Component

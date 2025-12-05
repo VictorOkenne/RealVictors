@@ -7,12 +7,15 @@
  * - Player stats table (goals and assists breakdown)
  */
 
-import React, { useState } from 'react';
-import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { COLORS, TYPOGRAPHY } from '../../../constants';
+import { BasketballCareerStats, CareerStatsSection, SoccerCareerStats } from '../../widgets/AppWide/CareerStatsSection';
+import { MedalStatsDisplay } from '../../widgets/AppWide/MedalStatsDisplay';
+import { PerformerStatsData } from '../../widgets/AppWide/PerformerStatsCard';
+import { PerformerStatsCarousel } from '../../widgets/AppWide/PerformerStatsCarousel';
+import { RankingScope, StatRanking, StatRankingsSection } from '../../widgets/AppWide/StatRankingsSection';
 import { mockTeamStats, PlayerStats, SportType, TeamStats } from './mockData';
-
-type StatCategory = 'careerHigh' | 'averages' | 'totals' | 'wins';
 
 interface StatsViewProps {
   sport?: SportType;
@@ -22,49 +25,178 @@ interface StatsViewProps {
   teamStats?: TeamStats;
 }
 
-interface TrophyCardProps {
-  count: number;
-  label: string;
-  color: string;
-}
-
-const TrophyCard: React.FC<TrophyCardProps> = ({ count, label, color }) => {
-  return (
-    <View style={[styles.trophyCard, { backgroundColor: color }]}>
-      <View style={styles.trophyIcon}>
-        <Text style={styles.trophyIconText}>🏆</Text>
-      </View>
-      <Text style={styles.trophyCount}>{count}</Text>
-      <Text style={styles.trophyLabel}>{label}</Text>
-    </View>
-  );
+// Helper function to convert PlayerStats to PerformerStatsData
+const convertToPerformerData = (player: PlayerStats): PerformerStatsData => {
+  const nameParts = player.playerName.split(' ');
+  const firstName = nameParts.slice(0, -1).join(' ') || player.playerName;
+  const lastName = nameParts[nameParts.length - 1] || '';
+  
+  return {
+    id: player.playerId,
+    name: player.playerName,
+    firstName,
+    lastName: lastName.toUpperCase(),
+    goals: player.goals,
+    assists: player.assists,
+    points: player.gamesPlayed, // Using games played as third stat for now
+    image: player.playerImage,
+  };
 };
 
-interface PlayerStatsRowProps {
-  player: PlayerStats;
-  rank: number;
-}
+// Mock team rankings data - in real app, this would come from API
+const getMockTeamRankings = (sport: SportType): Record<RankingScope, StatRanking[]> => {
+  if (sport === 'basketball') {
+    return {
+      league: [
+        { statName: 'Points Per Game', rank: 3, value: '113.5', scope: 'league', scopeLabel: 'NBA Western Conference' },
+        { statName: 'Assists Per Game', rank: 5, value: '25.1', scope: 'league', scopeLabel: 'NBA Western Conference' },
+        { statName: 'Rebounds', rank: 8, value: '45.2', scope: 'league', scopeLabel: 'NBA Western Conference' },
+        { statName: 'Win %', rank: 4, value: '63.4%', scope: 'league', scopeLabel: 'NBA Western Conference' },
+      ],
+      city: [],
+      state: [],
+      country: [],
+      worldwide: [],
+    };
+  }
+  
+  return {
+    league: [
+      { statName: 'Goals Scored', rank: 2, value: '87', scope: 'league', scopeLabel: 'Premier League' },
+      { statName: 'Assists', rank: 4, value: '65', scope: 'league', scopeLabel: 'Premier League' },
+      { statName: 'Clean Sheets', rank: 6, value: '15', scope: 'league', scopeLabel: 'Premier League' },
+      { statName: 'Win %', rank: 3, value: '62.2%', scope: 'league', scopeLabel: 'Premier League' },
+    ],
+    city: [],
+    state: [],
+    country: [],
+    worldwide: [],
+  };
+};
 
-const PlayerStatsRow: React.FC<PlayerStatsRowProps> = ({ player, rank }) => {
-  return (
-    <View style={styles.playerRow}>
-      <Text style={styles.rankCell}>{rank}</Text>
-      <View style={styles.playerCell}>
-        {player.playerImage && (
-          <Image source={player.playerImage} style={styles.playerAvatar} resizeMode="cover" />
-        )}
-        <View style={styles.playerInfo}>
-          <Text style={styles.playerName} numberOfLines={1}>
-            {player.playerName}
-          </Text>
-          <Text style={styles.playerPosition}>{player.position}</Text>
-        </View>
-      </View>
-      <Text style={styles.statCell}>{player.gamesPlayed}</Text>
-      <Text style={[styles.statCell, styles.highlightCell]}>{player.goals}</Text>
-      <Text style={[styles.statCell, styles.highlightCell]}>{player.assists}</Text>
-    </View>
-  );
+// Mock team career stats data - in real app, this would come from API
+const getMockTeamCareerStats = (sport: SportType, teamStats: TeamStats): SoccerCareerStats | BasketballCareerStats => {
+  if (sport === 'basketball') {
+    return {
+      totals: {
+        wins: teamStats.totalWins,
+        losses: teamStats.totalLosses,
+        points: teamStats.totalGoals, // Using totalGoals for points
+        rebounds: 2840,
+        assists: teamStats.totalAssists,
+        blocks: 380,
+        steals: 620,
+        gamesPlayed: teamStats.gamesPlayed,
+        minutesPlayed: 19680,
+        highestWinStreak: 12,
+      },
+      averagesPerGame: {
+        points: teamStats.averageGoalsPerGame,
+        rebounds: teamStats.averageReboundsPerGame || 45.2,
+        assists: teamStats.averageAssistsPerGame,
+        blocks: 6.1,
+        steals: 9.8,
+        minutesPlayed: 240,
+        fieldGoalPercentage: teamStats.averageFieldGoalPercentage || 47.8,
+        freeThrowPercentage: 78.5,
+        threePointPercentage: 36.2,
+      },
+      averagesPerSeason: {
+        points: 1810,
+        rebounds: 710,
+        assists: 503,
+        blocks: 95,
+        steals: 155,
+        minutesPlayed: 4920,
+        fieldGoalPercentage: teamStats.averageFieldGoalPercentage || 47.8,
+        freeThrowPercentage: 78.5,
+        threePointPercentage: 36.2,
+      },
+      gameHigh: {
+        points: 152,
+        rebounds: 65,
+        assists: 38,
+        blocks: 14,
+        steals: 18,
+        minutesPlayed: 240,
+        fieldGoalPercentage: 68.5,
+        freeThrowPercentage: 92.3,
+        threePointPercentage: 58.3,
+      },
+      seasonHigh: {
+        points: 2250,
+        rebounds: 890,
+        assists: 625,
+        blocks: 145,
+        steals: 205,
+        wins: 65,
+        winStreak: 18,
+        gamesPlayed: 82,
+        minutesPlayed: 5640,
+        fieldGoalPercentage: 52.3,
+        freeThrowPercentage: 85.2,
+        threePointPercentage: 42.1,
+      },
+    } as BasketballCareerStats;
+  }
+  
+  return {
+    totals: {
+      wins: teamStats.totalWins,
+      losses: teamStats.totalLosses,
+      draws: teamStats.totalDraws || 0,
+      gamesPlayed: teamStats.gamesPlayed,
+      goals: teamStats.totalGoals,
+      assists: teamStats.totalAssists,
+      tackles: 1245,
+      successfulDribbles: 892,
+      minutesPlayed: 18500,
+      highestWinStreak: 15,
+      yellowCards: 45,
+      redCards: 3,
+    },
+    averagesPerGame: {
+      goals: teamStats.averageGoalsPerGame,
+      assists: teamStats.averageAssistsPerGame,
+      tackles: 2.8,
+      successfulDribbles: 2.0,
+      passingAccuracy: teamStats.averagePossession || 87.2,
+      shotsOnTarget: 5.5,
+      shotAccuracy: 68.5,
+      minutesPlayed: 90,
+    },
+    averagesPerSeason: {
+      goals: 58,
+      assists: 43,
+      tackles: 106,
+      successfulDribbles: 75,
+      passingAccuracy: teamStats.averagePossession || 87.2,
+      shotsOnTarget: 207,
+      shotAccuracy: 68.5,
+      minutesPlayed: 3420,
+    },
+    gameHigh: {
+      goals: 7,
+      assists: 6,
+      tackles: 12,
+      successfulDribbles: 15,
+      shotsOnTarget: 12,
+      passingAccuracy: 95.8,
+      shotAccuracy: 85.7,
+    },
+    seasonHigh: {
+      goals: 103,
+      assists: 72,
+      tackles: 156,
+      successfulDribbles: 128,
+      passingAccuracy: 92.5,
+      shotAccuracy: 75.3,
+      wins: 32,
+      winStreak: 18,
+      gamesPlayed: 62,
+      minutesPlayed: 5580,
+    },
+  } as SoccerCareerStats;
 };
 
 export const StatsView: React.FC<StatsViewProps> = ({
@@ -74,173 +206,47 @@ export const StatsView: React.FC<StatsViewProps> = ({
   bronzeMedals = 0,
   teamStats: teamStatsProp,
 }) => {
-  const [activeCategory, setActiveCategory] = useState<StatCategory>('totals');
-
   const teamStats = teamStatsProp || mockTeamStats;
-  const isBasketball = sport === 'basketball';
-
-  // Render stat cards based on active category
-  const renderStatCards = () => {
-    switch (activeCategory) {
-      case 'totals':
-        return (
-          <View style={styles.statsGrid}>
-            <View style={styles.statCard}>
-              <Text style={styles.statLabel}>{isBasketball ? 'Points' : 'Goals'}</Text>
-              <Text style={styles.statValue}>{teamStats.totalGoals}</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statLabel}>Assists</Text>
-              <Text style={styles.statValue}>{teamStats.totalAssists}</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statLabel}>Wins</Text>
-              <Text style={styles.statValue}>{teamStats.totalWins}</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statLabel}>Losses</Text>
-              <Text style={styles.statValue}>{teamStats.totalLosses}</Text>
-            </View>
-          </View>
-        );
-      case 'averages':
-        return (
-          <View style={styles.statsGrid}>
-            <View style={styles.statCard}>
-              <Text style={styles.statLabel}>{isBasketball ? 'PPG' : 'Goals/Game'}</Text>
-              <Text style={styles.statValue}>{teamStats.averageGoalsPerGame.toFixed(1)}</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statLabel}>{isBasketball ? 'APG' : 'Assists/Game'}</Text>
-              <Text style={styles.statValue}>{teamStats.averageAssistsPerGame.toFixed(1)}</Text>
-            </View>
-            {!isBasketball && (
-              <>
-                <View style={styles.statCard}>
-                  <Text style={styles.statLabel}>Possession</Text>
-                  <Text style={styles.statValue}>{teamStats.averagePossession}%</Text>
-                </View>
-                <View style={styles.statCard}>
-                  <Text style={styles.statLabel}>Pass Acc.</Text>
-                  <Text style={styles.statValue}>{teamStats.averagePassAccuracy}%</Text>
-                </View>
-              </>
-            )}
-            {isBasketball && (
-              <>
-                <View style={styles.statCard}>
-                  <Text style={styles.statLabel}>RPG</Text>
-                  <Text style={styles.statValue}>{teamStats.averageReboundsPerGame?.toFixed(1) || '0.0'}</Text>
-                </View>
-                <View style={styles.statCard}>
-                  <Text style={styles.statLabel}>FG%</Text>
-                  <Text style={styles.statValue}>{teamStats.averageFieldGoalPercentage?.toFixed(1) || '0.0'}%</Text>
-                </View>
-              </>
-            )}
-          </View>
-        );
-      case 'wins':
-        return (
-          <View style={styles.statsGrid}>
-            <View style={styles.statCard}>
-              <Text style={styles.statLabel}>Wins</Text>
-              <Text style={styles.statValue}>{teamStats.totalWins}</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statLabel}>Losses</Text>
-              <Text style={styles.statValue}>{teamStats.totalLosses}</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statLabel}>Draws</Text>
-              <Text style={styles.statValue}>{teamStats.totalDraws || 0}</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statLabel}>Win %</Text>
-              <Text style={styles.statValue}>
-                {((teamStats.totalWins / teamStats.gamesPlayed) * 100).toFixed(1)}%
-              </Text>
-            </View>
-          </View>
-        );
-      default:
-        return null;
-    }
-  };
+  const teamRankings = getMockTeamRankings(sport);
+  const topPerformers = teamStats.playerStats.map(convertToPerformerData);
+  const teamCareerStats = getMockTeamCareerStats(sport, teamStats);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Trophies Section */}
       <View style={styles.trophiesSection}>
         <Text style={styles.sectionTitle}>Trophies</Text>
-        <View style={styles.trophiesContainer}>
-          <TrophyCard count={goldMedals} label="CHAMPION" color="#F59E0B" />
-          <TrophyCard count={silverMedals} label="RUNNER UP" color="#9CA3AF" />
-          <TrophyCard count={bronzeMedals} label="3RD PLACE" color="#D97706" />
-        </View>
+        <MedalStatsDisplay
+          goldMedals={goldMedals}
+          silverMedals={silverMedals}
+          bronzeMedals={bronzeMedals}
+        />
       </View>
 
       {/* Team Stats Section */}
       <View style={styles.teamStatsSection}>
-        {/* Category Toggle */}
-        <View style={styles.categoryToggle}>
-          <TouchableOpacity
-            style={[styles.categoryButton, activeCategory === 'careerHigh' && styles.categoryButtonActive]}
-            onPress={() => setActiveCategory('careerHigh')}
-          >
-            <Text style={[styles.categoryText, activeCategory === 'careerHigh' && styles.categoryTextActive]}>
-              Career High
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.categoryButton, activeCategory === 'averages' && styles.categoryButtonActive]}
-            onPress={() => setActiveCategory('averages')}
-          >
-            <Text style={[styles.categoryText, activeCategory === 'averages' && styles.categoryTextActive]}>
-              Averages
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.categoryButton, activeCategory === 'totals' && styles.categoryButtonActive]}
-            onPress={() => setActiveCategory('totals')}
-          >
-            <Text style={[styles.categoryText, activeCategory === 'totals' && styles.categoryTextActive]}>
-              Totals
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.categoryButton, activeCategory === 'wins' && styles.categoryButtonActive]}
-            onPress={() => setActiveCategory('wins')}
-          >
-            <Text style={[styles.categoryText, activeCategory === 'wins' && styles.categoryTextActive]}>
-              Wins
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Stat Cards */}
-        {renderStatCards()}
+        <CareerStatsSection
+          sport={sport}
+          careerStats={teamCareerStats}
+          title="Team Stats"
+          isTeamStats={true}
+        />
       </View>
 
-      {/* Player Stats Table */}
+      {/* Team Rankings Section */}
+      <View style={styles.rankingsSection}>
+        <StatRankingsSection
+          rankingsByScope={teamRankings}
+          title="Team Rankings"
+        />
+      </View>
+
+      {/* Player Stats Section - Top Performers */}
       <View style={styles.playerStatsSection}>
-        <Text style={styles.sectionTitle}>Player Statistics</Text>
-
-        {/* Table Header */}
-        <View style={styles.tableHeader}>
-          <Text style={styles.headerCell}>#</Text>
-          <Text style={[styles.headerCell, styles.playerHeaderCell]}>Player</Text>
-          <Text style={styles.headerCell}>GP</Text>
-          <Text style={styles.headerCell}>{isBasketball ? 'PTS' : 'G'}</Text>
-          <Text style={styles.headerCell}>{isBasketball ? 'AST' : 'A'}</Text>
-        </View>
-
-        {/* Table Body */}
-        <FlatList
-          data={teamStats.playerStats}
-          keyExtractor={(item) => item.playerId}
-          renderItem={({ item, index }) => <PlayerStatsRow player={item} rank={index + 1} />}
-          scrollEnabled={false}
+        <PerformerStatsCarousel
+          players={topPerformers}
+          sport={sport}
+          title="Player Statistics"
         />
       </View>
     </ScrollView>
@@ -260,174 +266,22 @@ const styles = StyleSheet.create({
 
   // Trophies Section
   trophiesSection: {
-    marginBottom: 24,
-  },
-  trophiesContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  trophyCard: {
-    flex: 1,
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    gap: 8,
-  },
-  trophyIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  trophyIconText: {
-    fontSize: 24,
-  },
-  trophyCount: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 28,
-    color: COLORS.white,
-  },
-  trophyLabel: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 10,
-    color: COLORS.white,
-    textAlign: 'center',
+    marginBottom: 32,
   },
 
   // Team Stats Section
   teamStatsSection: {
-    marginBottom: 24,
-  },
-  categoryToggle: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.black,
-    borderRadius: 8,
-    padding: 4,
-    marginBottom: 16,
-  },
-  categoryButton: {
-    flex: 1,
-    paddingVertical: 8,
-    borderRadius: 6,
-    alignItems: 'center',
-  },
-  categoryButtonActive: {
-    backgroundColor: COLORS.white,
-  },
-  categoryText: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 11,
-    color: COLORS.white,
-  },
-  categoryTextActive: {
-    color: COLORS.black,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.gray200,
-    alignItems: 'center',
-    gap: 8,
-  },
-  statLabel: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    fontSize: 12,
-    color: COLORS.gray600,
-  },
-  statValue: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 24,
-    color: COLORS.black,
+    marginBottom: 32,
   },
 
-  // Player Stats Table
+  // Team Rankings Section
+  rankingsSection: {
+    marginBottom: 32,
+  },
+
+  // Player Stats Section
   playerStatsSection: {
-    marginBottom: 24,
-  },
-  tableHeader: {
-    flexDirection: 'row',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: COLORS.gray100,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  headerCell: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 11,
-    color: COLORS.gray600,
-    width: 40,
-    textAlign: 'center',
-  },
-  playerHeaderCell: {
-    flex: 1,
-    textAlign: 'left',
-  },
-  playerRow: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    backgroundColor: COLORS.white,
-    borderRadius: 8,
-    marginBottom: 4,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.gray200,
-  },
-  rankCell: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 13,
-    color: COLORS.gray600,
-    width: 40,
-    textAlign: 'center',
-  },
-  playerCell: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  playerAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.gray200,
-  },
-  playerInfo: {
-    flex: 1,
-    gap: 2,
-  },
-  playerName: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 14,
-    color: COLORS.black,
-  },
-  playerPosition: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    fontSize: 11,
-    color: COLORS.gray600,
-  },
-  statCell: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    fontSize: 13,
-    color: COLORS.gray600,
-    width: 40,
-    textAlign: 'center',
-  },
-  highlightCell: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    color: COLORS.black,
+    marginBottom: 32,
   },
 });
 

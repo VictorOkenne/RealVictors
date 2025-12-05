@@ -6,7 +6,7 @@
  */
 
 import { Stack } from 'expo-router';
-import { MainSearchPage } from '../src/components/screens/SearchPage';
+import { MainSearchPage } from '@/components/screens/SearchPage';
 
 export default function SearchPage() {
   return (

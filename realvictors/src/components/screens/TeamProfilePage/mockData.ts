@@ -27,13 +27,13 @@ export interface TeamProfile {
   isVerified: boolean; // Verified team badge
   sport: SportType; // Sport the team plays
   nationality: Nationality; // Team's nationality/country
-  league: League; // Current league the team plays in
+  leagues: League[]; // Leagues the team plays in (can be multiple)
   teamPhoto?: ImageSourcePropType; // Team photo (optional)
+  squadCount?: number; // Number of players in the squad
 
   // Social stats
   stats: {
     followers: string;
-    following: string;
   };
 
   // Team performance stats
@@ -100,6 +100,7 @@ export interface LeagueTableEntry {
   goalsAgainst: number;
   goalDifference: number;
   points: number;
+  form?: ('W' | 'L' | 'D')[]; // Last 5 games form (W = Win, L = Loss, D = Draw)
 }
 
 // League Table
@@ -112,36 +113,158 @@ export interface LeagueTable {
   table: LeagueTableEntry[];
 }
 
-// Tournament Match
-export interface TournamentMatch {
-  team1: {
-    name: string;
-    shortName: string;
-    logo: ImageSourcePropType;
-    score?: number;
-  };
-  team2: {
-    name: string;
-    shortName: string;
-    logo: ImageSourcePropType;
-    score?: number;
-  };
+// ===============================
+// TOURNAMENT SYSTEM INTERFACES
+// ===============================
+
+// Base team in match (actual team with data)
+export interface TeamInMatchBase {
+  name: string;
+  shortName: string;
+  logo: ImageSourcePropType;
+  score?: number;
 }
 
-// Tournament Round
-export interface TournamentRound {
-  roundName: string; // e.g., "Round of 16", "Quarter Finals", "Semi Finals", "Finals"
+// TBD Team (not yet determined)
+export interface TBDTeam {
+  isTBD: true;
+  placeholder: string; // e.g., "Winner of Group A", "Runner-up Group B", "TBD"
+  determinedBy: 'group_winner' | 'group_runner_up' | 'ranking' | 'random_draw' | 'playoff';
+  groupId?: string; // if determined by group stage (e.g., "A", "B")
+  rankPosition?: number; // e.g., 1 for winner, 2 for runner-up, 3 for third place
+}
+
+// Team in a match can be either a real team or TBD
+export type TeamInMatch = TeamInMatchBase | TBDTeam;
+
+// Single match (one game decides winner)
+export interface SingleMatch {
+  matchId: string;
+  matchType: 'single';
+  team1: TeamInMatch;
+  team2: TeamInMatch;
+  winner?: string; // team shortName or null if not played
+  matchDate?: string;
+  venue?: string;
+  status: 'scheduled' | 'completed' | 'tbd'; // tbd if teams not determined yet
+}
+
+// Two-leg match (home and away, aggregate score)
+export interface TwoLegMatch {
+  matchId: string;
+  matchType: 'two-leg';
+  team1: TeamInMatch;
+  team2: TeamInMatch;
+  firstLeg?: {
+    score1: number;
+    score2: number;
+    date: string;
+    venue: string;
+    completed: boolean;
+  };
+  secondLeg?: {
+    score1: number;
+    score2: number;
+    date: string;
+    venue: string;
+    completed: boolean;
+  };
+  aggregateScore?: {
+    team1: number;
+    team2: number;
+  };
+  winner?: string; // team shortName
+  status: 'not_started' | 'first_leg_completed' | 'completed' | 'tbd';
+}
+
+// Series match (best of X games - basketball playoffs)
+export interface SeriesMatch {
+  matchId: string;
+  matchType: 'series';
+  team1: TeamInMatch;
+  team2: TeamInMatch;
+  seriesLength: 3 | 5 | 7; // Best of X
+  currentScore: {
+    team1Wins: number;
+    team2Wins: number;
+  };
+  games: Array<{
+    gameNumber: number;
+    score1: number;
+    score2: number;
+    date: string;
+    venue: string;
+  }>;
+  seriesWinner?: string; // team shortName
+  seriesStatus: string; // e.g., "LAL leads 3-2", "Series tied 2-2", "PSG wins 4-1"
+  status: 'in_progress' | 'completed' | 'tbd';
+}
+
+// Union type for all match types
+export type TournamentMatch = SingleMatch | TwoLegMatch | SeriesMatch;
+
+// Tournament Group (for group stage tournaments)
+export interface TournamentGroup {
+  groupId: string; // e.g., "A", "B", "C"
+  groupName: string; // e.g., "Group A"
+  qualificationRules: {
+    advanceCount: number; // how many teams advance (e.g., 2 for top 2)
+    qualificationColors: string[]; // color for each position e.g., ['#10B981', '#10B981', '#FFA500', '#6B7280']
+    qualificationLabels: string[]; // label for each position e.g., ['Qualified', 'Qualified', 'Playoff', 'Eliminated']
+  };
+  standings: LeagueTableEntry[]; // Reuse existing league table structure
+}
+
+// Group Stage
+export interface GroupStage {
+  groups: TournamentGroup[];
+  hasGlobalToggle: boolean; // If true, one All/Form toggle affects all groups; if false, each group has own toggle
+}
+
+// Knockout Round
+export interface KnockoutRound {
+  roundId: string; // e.g., "r16", "qf", "sf", "f"
+  roundName: string; // e.g., "Round of 16", "Quarter Finals", "Semi Finals", "Final"
+  roundOrder: number; // 1, 2, 3, 4 for navigation/sorting
   matches: TournamentMatch[];
+  hasByes?: boolean; // If some teams skip this round
 }
 
-// Tournament Bracket
-export interface TournamentBracket {
+// Knockout Stage
+export interface KnockoutStage {
+  rounds: KnockoutRound[];
+}
+
+// Complete Tournament Structure
+export interface Tournament {
   competitionId: string;
-  competitionName: string; // e.g., "Champions League"
+  competitionName: string;
   competitionLogo?: ImageSourcePropType;
   season: string;
   isCurrent: boolean;
-  rounds: TournamentRound[];
+  sport: SportType;
+
+  // Tournament format configuration
+  format: {
+    type: 'knockout_only' | 'group_knockout' | 'league_knockout';
+    hasGroupStage: boolean;
+    hasLeagueStage: boolean;
+    knockoutFormat: 'single' | 'two-leg' | 'series';
+    seriesLength?: 3 | 5 | 7; // For basketball series
+  };
+
+  // Stages (can have one or both)
+  groupStage?: GroupStage;
+  knockoutStage: KnockoutStage;
+
+  // Current team info (optional - for highlighting and status)
+  userTeamStatus?: {
+    teamShortName: string;
+    eliminated: boolean;
+    currentStage: 'group' | 'knockout' | 'champion';
+    currentRound?: string; // roundId if in knockout
+    groupId?: string; // if in group stage
+  };
 }
 
 // Competition (can be either league or tournament)
@@ -150,7 +273,7 @@ export interface Competition {
   name: string;
   type: 'league' | 'tournament';
   isCurrent: boolean;
-  data: LeagueTable | TournamentBracket;
+  data: LeagueTable | Tournament;
 }
 
 // Player Stats (for stats table in StatsView)
@@ -205,14 +328,20 @@ export const mockTeamProfile: TeamProfile = {
     name: 'England',
     flag: require('../../../assets/MockData/MatchPage/chelseaLogo.png'), // Replace with England flag
   },
-  league: {
-    name: 'Premier League',
-    logo: require('../../../assets/MockData/MatchPage/psgLogo.png'), // Replace with Premier League logo
-  },
-  teamPhoto: require('../../../assets/MockData/SocialMedia/socailmeadia1.jpg'), // Placeholder team photo
+  leagues: [
+    {
+      name: 'Premier League',
+      logo: require('../../../assets/MockData/MatchPage/psgLogo.png'), // Replace with Premier League logo
+    },
+    {
+      name: 'UEFA Champions League',
+      logo: require('../../../assets/MockData/MatchPage/chelseaLogo.png'), // Replace with UCL logo
+    },
+  ],
+  teamPhoto: require('../../../assets/MockData/TeamProfile/chelsea_full_squad_image.png'), // Team photo
+  squadCount: 10, // Number of players shown in mockSquadMembers
   stats: {
     followers: '2.5M',
-    following: '124',
   },
   teamStats: {
     wins: 156,
@@ -488,7 +617,7 @@ export const mockPreviousMatches: TeamMatch[] = [
   },
 ];
 
-// Mock League Table (Premier League)
+// Mock League Table (Inter State League) - matches Figma design
 export const mockLeagueTable: LeagueTable = {
   competitionId: 'comp1',
   competitionName: 'Inter State League',
@@ -504,12 +633,13 @@ export const mockLeagueTable: LeagueTable = {
       },
       played: 5,
       won: 5,
-      drawn: 5,
-      lost: 2,
+      drawn: 0,
+      lost: 0,
       goalsFor: 14,
       goalsAgainst: 3,
       goalDifference: 11,
-      points: 10,
+      points: 15,
+      form: ['W', 'W', 'W', 'W', 'W'],
     },
     {
       rank: 2,
@@ -519,13 +649,14 @@ export const mockLeagueTable: LeagueTable = {
         logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
       },
       played: 5,
-      won: 5,
-      drawn: 5,
-      lost: 2,
-      goalsFor: 14,
-      goalsAgainst: 3,
-      goalDifference: 11,
-      points: 10,
+      won: 4,
+      drawn: 1,
+      lost: 0,
+      goalsFor: 12,
+      goalsAgainst: 4,
+      goalDifference: 8,
+      points: 13,
+      form: ['W', 'W', 'D', 'W', 'W'],
     },
     {
       rank: 3,
@@ -535,13 +666,14 @@ export const mockLeagueTable: LeagueTable = {
         logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
       },
       played: 5,
-      won: 5,
-      drawn: 5,
-      lost: 2,
-      goalsFor: 14,
-      goalsAgainst: 3,
-      goalDifference: 11,
-      points: 10,
+      won: 4,
+      drawn: 0,
+      lost: 1,
+      goalsFor: 11,
+      goalsAgainst: 5,
+      goalDifference: 6,
+      points: 12,
+      form: ['W', 'L', 'W', 'W', 'W'],
     },
     {
       rank: 4,
@@ -551,143 +683,302 @@ export const mockLeagueTable: LeagueTable = {
         logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
       },
       played: 5,
-      won: 5,
-      drawn: 5,
-      lost: 2,
-      goalsFor: 14,
-      goalsAgainst: 3,
-      goalDifference: 11,
-      points: 10,
+      won: 3,
+      drawn: 2,
+      lost: 0,
+      goalsFor: 10,
+      goalsAgainst: 5,
+      goalDifference: 5,
+      points: 11,
+      form: ['D', 'W', 'W', 'D', 'W'],
     },
     {
       rank: 5,
+      team: {
+        name: 'Manchester City',
+        shortName: 'MCI',
+        logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
+      },
+      played: 5,
+      won: 3,
+      drawn: 1,
+      lost: 1,
+      goalsFor: 9,
+      goalsAgainst: 6,
+      goalDifference: 3,
+      points: 10,
+      form: ['W', 'L', 'D', 'W', 'W'],
+    },
+    {
+      rank: 6,
+      team: {
+        name: 'Tottenham',
+        shortName: 'TOT',
+        logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
+      },
+      played: 5,
+      won: 3,
+      drawn: 0,
+      lost: 2,
+      goalsFor: 8,
+      goalsAgainst: 7,
+      goalDifference: 1,
+      points: 9,
+      form: ['W', 'L', 'W', 'L', 'W'],
+    },
+    {
+      rank: 7,
+      team: {
+        name: 'Newcastle',
+        shortName: 'NEW',
+        logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
+      },
+      played: 5,
+      won: 2,
+      drawn: 2,
+      lost: 1,
+      goalsFor: 7,
+      goalsAgainst: 6,
+      goalDifference: 1,
+      points: 8,
+      form: ['D', 'W', 'L', 'D', 'W'],
+    },
+    {
+      rank: 8,
+      team: {
+        name: 'Aston Villa',
+        shortName: 'AVL',
+        logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
+      },
+      played: 5,
+      won: 2,
+      drawn: 1,
+      lost: 2,
+      goalsFor: 6,
+      goalsAgainst: 7,
+      goalDifference: -1,
+      points: 7,
+      form: ['L', 'W', 'D', 'L', 'W'],
+    },
+    {
+      rank: 9,
+      team: {
+        name: 'Brighton',
+        shortName: 'BHA',
+        logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
+      },
+      played: 5,
+      won: 2,
+      drawn: 0,
+      lost: 3,
+      goalsFor: 5,
+      goalsAgainst: 8,
+      goalDifference: -3,
+      points: 6,
+      form: ['L', 'W', 'L', 'L', 'W'],
+    },
+    {
+      rank: 10,
+      team: {
+        name: 'West Ham',
+        shortName: 'WHU',
+        logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
+      },
+      played: 5,
+      won: 1,
+      drawn: 2,
+      lost: 2,
+      goalsFor: 5,
+      goalsAgainst: 7,
+      goalDifference: -2,
+      points: 5,
+      form: ['D', 'L', 'W', 'D', 'L'],
+    },
+    {
+      rank: 11,
+      team: {
+        name: 'Everton',
+        shortName: 'EVE',
+        logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
+      },
+      played: 5,
+      won: 1,
+      drawn: 1,
+      lost: 3,
+      goalsFor: 4,
+      goalsAgainst: 9,
+      goalDifference: -5,
+      points: 4,
+      form: ['L', 'D', 'L', 'W', 'L'],
+    },
+    {
+      rank: 12,
       team: {
         name: 'Chelsea',
         shortName: 'CFC',
         logo: require('../../../assets/MockData/MatchPage/chelseaLogo.png'),
       },
       played: 5,
-      won: 5,
-      drawn: 5,
-      lost: 2,
-      goalsFor: 14,
-      goalsAgainst: 3,
-      goalDifference: 11,
-      points: 10,
+      won: 1,
+      drawn: 0,
+      lost: 4,
+      goalsFor: 3,
+      goalsAgainst: 10,
+      goalDifference: -7,
+      points: 3,
+      form: ['L', 'L', 'W', 'L', 'L'],
+    },
+  ],
+};
+
+// Mock Premier League Table (another competition)
+export const mockPremierLeagueTable: LeagueTable = {
+  competitionId: 'comp-pl',
+  competitionName: 'Premier League',
+  season: '2024-2025',
+  isCurrent: true,
+  table: [
+    {
+      rank: 1,
+      team: {
+        name: 'Liverpool',
+        shortName: 'LIV',
+        logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
+      },
+      played: 15,
+      won: 12,
+      drawn: 2,
+      lost: 1,
+      goalsFor: 35,
+      goalsAgainst: 12,
+      goalDifference: 23,
+      points: 38,
+      form: ['W', 'W', 'D', 'W', 'W'],
     },
     {
-      rank: 6,
+      rank: 2,
+      team: {
+        name: 'Arsenal',
+        shortName: 'ARS',
+        logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
+      },
+      played: 15,
+      won: 11,
+      drawn: 3,
+      lost: 1,
+      goalsFor: 32,
+      goalsAgainst: 14,
+      goalDifference: 18,
+      points: 36,
+      form: ['W', 'D', 'W', 'W', 'D'],
+    },
+    {
+      rank: 3,
+      team: {
+        name: 'Manchester City',
+        shortName: 'MCI',
+        logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
+      },
+      played: 15,
+      won: 10,
+      drawn: 4,
+      lost: 1,
+      goalsFor: 30,
+      goalsAgainst: 15,
+      goalDifference: 15,
+      points: 34,
+      form: ['W', 'D', 'W', 'D', 'W'],
+    },
+    {
+      rank: 4,
+      team: {
+        name: 'Chelsea',
+        shortName: 'CFC',
+        logo: require('../../../assets/MockData/MatchPage/chelseaLogo.png'),
+      },
+      played: 15,
+      won: 9,
+      drawn: 3,
+      lost: 3,
+      goalsFor: 28,
+      goalsAgainst: 18,
+      goalDifference: 10,
+      points: 30,
+      form: ['W', 'L', 'W', 'W', 'D'],
+    },
+    {
+      rank: 5,
+      team: {
+        name: 'Newcastle',
+        shortName: 'NEW',
+        logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
+      },
+      played: 15,
+      won: 8,
+      drawn: 4,
+      lost: 3,
+      goalsFor: 26,
+      goalsAgainst: 19,
+      goalDifference: 7,
+      points: 28,
+      form: ['D', 'W', 'L', 'W', 'D'],
+    },
+  ],
+};
+
+// Past competition example
+export const mockPastLeagueTable: LeagueTable = {
+  competitionId: 'comp-past',
+  competitionName: 'Champions League 2023-24',
+  season: '2023-2024',
+  isCurrent: false,
+  table: [
+    {
+      rank: 1,
       team: {
         name: 'Real Madrid',
         shortName: 'RLM',
         logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
       },
-      played: 5,
-      won: 5,
-      drawn: 5,
-      lost: 2,
-      goalsFor: 14,
-      goalsAgainst: 3,
-      goalDifference: 11,
-      points: 10,
+      played: 10,
+      won: 8,
+      drawn: 1,
+      lost: 1,
+      goalsFor: 24,
+      goalsAgainst: 8,
+      goalDifference: 16,
+      points: 25,
+      form: ['W', 'W', 'W', 'D', 'W'],
+    },
+    {
+      rank: 2,
+      team: {
+        name: 'Chelsea',
+        shortName: 'CFC',
+        logo: require('../../../assets/MockData/MatchPage/chelseaLogo.png'),
+      },
+      played: 10,
+      won: 7,
+      drawn: 2,
+      lost: 1,
+      goalsFor: 22,
+      goalsAgainst: 10,
+      goalDifference: 12,
+      points: 23,
+      form: ['W', 'D', 'W', 'W', 'D'],
     },
   ],
 };
 
-// Mock Tournament Bracket (Champions League)
-export const mockTournamentBracket: TournamentBracket = {
-  competitionId: 'comp2',
-  competitionName: 'Inter State League',
-  season: '2024-2025',
-  isCurrent: true,
-  rounds: [
-    {
-      roundName: 'Round of 16',
-      matches: [
-        {
-          team1: {
-            name: 'Chelsea',
-            shortName: 'CFC',
-            logo: require('../../../assets/MockData/MatchPage/chelseaLogo.png'),
-            score: 1,
-          },
-          team2: {
-            name: 'PSG',
-            shortName: 'PSG',
-            logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
-            score: 2,
-          },
-        },
-        {
-          team1: {
-            name: 'Arsenal',
-            shortName: 'ARS',
-            logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
-            score: 1,
-          },
-          team2: {
-            name: 'Liverpool',
-            shortName: 'LVP',
-            logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
-            score: 2,
-          },
-        },
-      ],
-    },
-    {
-      roundName: 'Quarter Finals',
-      matches: [
-        {
-          team1: {
-            name: 'PSG',
-            shortName: 'PSG',
-            logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
-            score: 1,
-          },
-          team2: {
-            name: 'Arsenal',
-            shortName: 'ARS',
-            logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
-            score: 2,
-          },
-        },
-      ],
-    },
-    {
-      roundName: 'Semi Finals',
-      matches: [
-        {
-          team1: {
-            name: 'Chelsea',
-            shortName: 'CFC',
-            logo: require('../../../assets/MockData/MatchPage/chelseaLogo.png'),
-            score: 1,
-          },
-          team2: {
-            name: 'PSG',
-            shortName: 'PSG',
-            logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
-            score: 2,
-          },
-        },
-        {
-          team1: {
-            name: 'Arsenal',
-            shortName: 'ARS',
-            logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
-            score: 1,
-          },
-          team2: {
-            name: 'Liverpool',
-            shortName: 'LVP',
-            logo: require('../../../assets/MockData/MatchPage/psgLogo.png'),
-            score: 2,
-          },
-        },
-      ],
-    },
-  ],
-};
+// ===============================
+// TOURNAMENT MOCK DATA
+// ===============================
+// Import comprehensive tournament data from separate file
+export {
+  mockWorldCupTournament,
+  mockChampionsLeagueTournament,
+  mockNBAPlayoffsTournament,
+} from './mockTournamentData';
 
 // Mock Player Stats for Stats View
 export const mockPlayerStats: PlayerStats[] = [
@@ -774,14 +1065,16 @@ export const mockBasketballTeamProfile: TeamProfile = {
     name: 'United States',
     flag: require('../../../assets/MockData/MatchPage/chelseaLogo.png'), // Replace with USA flag
   },
-  league: {
-    name: 'NBA',
-    logo: require('../../../assets/MockData/MatchPage/psgLogo.png'), // Replace with NBA logo
-  },
-  teamPhoto: require('../../../assets/MockData/SocialMedia/socailmeadia2.jpg'), // Placeholder team photo
+  leagues: [
+    {
+      name: 'NBA',
+      logo: require('../../../assets/MockData/MatchPage/psgLogo.png'), // Replace with NBA logo
+    },
+  ],
+  teamPhoto: require('../../../assets/MockData/SocialMedia/socailmeadia2.jpg'), // Team photo
+  squadCount: 7, // Number of players shown in mockBasketballSquadMembers
   stats: {
     followers: '18.5M',
-    following: '256',
   },
   teamStats: {
     wins: 52,
@@ -1004,6 +1297,7 @@ export const mockBasketballLeagueTable: LeagueTable = {
       goalsAgainst: 0,
       goalDifference: 0,
       points: 24,
+      form: ['W', 'W', 'W', 'L', 'W'],
     },
     {
       rank: 2,
@@ -1020,6 +1314,7 @@ export const mockBasketballLeagueTable: LeagueTable = {
       goalsAgainst: 0,
       goalDifference: 0,
       points: 22,
+      form: ['W', 'L', 'W', 'W', 'W'],
     },
     {
       rank: 3,
@@ -1036,6 +1331,7 @@ export const mockBasketballLeagueTable: LeagueTable = {
       goalsAgainst: 0,
       goalDifference: 0,
       points: 20,
+      form: ['W', 'W', 'L', 'W', 'L'],
     },
     {
       rank: 4,
@@ -1052,6 +1348,7 @@ export const mockBasketballLeagueTable: LeagueTable = {
       goalsAgainst: 0,
       goalDifference: 0,
       points: 18,
+      form: ['L', 'W', 'L', 'W', 'W'],
     },
     {
       rank: 5,
@@ -1068,6 +1365,7 @@ export const mockBasketballLeagueTable: LeagueTable = {
       goalsAgainst: 0,
       goalDifference: 0,
       points: 17,
+      form: ['L', 'L', 'W', 'W', 'L'],
     },
   ],
 };

@@ -8,8 +8,11 @@ import { ImageSourcePropType } from 'react-native';
 import { SkillRating } from '../../widgets/UserProfile/PlayerRatings';
 import { UserPosition } from '../../widgets/UserProfile/PositionSelector';
 import { FormationType } from '../MatchPage/mockData';
+import { RankingScope, StatRanking as PlayerRanking } from '../../widgets/AppWide/StatRankingsSection';
+import { SoccerCareerStats, BasketballCareerStats } from '../../widgets/AppWide/CareerStatsSection';
 
 export type SportType = 'soccer' | 'basketball';
+export type { RankingScope, PlayerRanking, SoccerCareerStats, BasketballCareerStats };
 
 export interface Team {
   name: string;
@@ -639,137 +642,9 @@ export const mockReviews = mockSoccerReviews;
 // ===============================
 
 // Basketball stats
-export interface BasketballCareerStats {
-  gameHigh: {
-    points: number;
-    rebounds: number;
-    assists: number;
-    blocks: number;
-    steals: number;
-    minutesPlayed: number;
-    fieldGoalPercentage: number;
-    freeThrowPercentage: number;
-    threePointPercentage: number;
-  };
-  seasonHigh: {
-    points: number;
-    rebounds: number;
-    assists: number;
-    blocks: number;
-    steals: number;
-    wins: number;
-    gamesPlayed: number;
-    minutesPlayed: number;
-    winStreak: number;
-    fieldGoalPercentage: number;
-    freeThrowPercentage: number;
-    threePointPercentage: number;
-  };
-  averagesPerGame: {
-    points: number;
-    rebounds: number;
-    assists: number;
-    blocks: number;
-    steals: number;
-    minutesPlayed: number;
-    fieldGoalPercentage: number;
-    freeThrowPercentage: number;
-    threePointPercentage: number;
-  };
-  averagesPerSeason: {
-    points: number;
-    rebounds: number;
-    assists: number;
-    blocks: number;
-    steals: number;
-    minutesPlayed: number;
-    fieldGoalPercentage: number;
-    freeThrowPercentage: number;
-    threePointPercentage: number;
-  };
-  totals: {
-    wins: number;
-    losses: number;
-    points: number;
-    rebounds: number;
-    assists: number;
-    blocks: number;
-    steals: number;
-    gamesPlayed: number;
-    minutesPlayed: number;
-    highestWinStreak: number;
-  };
-}
+// Career stats interfaces (types imported from AppWide/CareerStatsSection)
 
-// Soccer stats
-export interface SoccerCareerStats {
-  gameHigh: {
-    goals: number;
-    assists: number;
-    tackles: number;
-    successfulDribbles: number;
-    shotsOnTarget: number;
-    passingAccuracy: number;
-    shotAccuracy: number;
-  };
-  seasonHigh: {
-    goals: number;
-    assists: number;
-    tackles: number;
-    successfulDribbles: number;
-    passingAccuracy: number;
-    shotAccuracy: number;
-    wins: number;
-    gamesPlayed: number;
-    minutesPlayed: number;
-    winStreak: number;
-  };
-  averagesPerGame: {
-    goals: number;
-    assists: number;
-    tackles: number;
-    successfulDribbles: number;
-    passingAccuracy: number;
-    shotsOnTarget: number;
-    shotAccuracy: number;
-    minutesPlayed: number;
-  };
-  averagesPerSeason: {
-    goals: number;
-    assists: number;
-    tackles: number;
-    successfulDribbles: number;
-    passingAccuracy: number;
-    shotsOnTarget: number;
-    shotAccuracy: number;
-    minutesPlayed: number;
-  };
-  totals: {
-    wins: number;
-    losses: number;
-    draws: number;
-    gamesPlayed: number;
-    goals: number;
-    assists: number;
-    tackles: number;
-    successfulDribbles: number;
-    minutesPlayed: number;
-    highestWinStreak: number;
-    yellowCards: number;
-    redCards: number;
-  };
-}
-
-// Player rankings
-export type RankingScope = 'league' | 'city' | 'state' | 'country' | 'worldwide';
-
-export interface PlayerRanking {
-  statName: string;
-  rank: number;
-  value: string;
-  scope: RankingScope;
-  scopeLabel: string; // e.g., "Premier League", "New York City", "USA"
-}
+// Player rankings (types imported from AppWide/StatRankingsSection)
 
 // Game log entry
 export interface GameLog {

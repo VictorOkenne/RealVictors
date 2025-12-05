@@ -14,7 +14,7 @@
 
 import { Tabs } from 'expo-router';
 import { Image, Platform } from 'react-native';
-import { COLORS } from '../../src/constants';
+import { COLORS } from '@/constants';
 
 /**
  * TabLayout Component
